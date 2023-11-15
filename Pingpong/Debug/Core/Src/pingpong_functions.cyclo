@@ -1,6 +1,0 @@
-../Core/Src/pingpong_functions.c:27:6:Led_on	18
-../Core/Src/pingpong_functions.c:78:6:Set_led	18
-../Core/Src/pingpong_functions.c:122:6:Show_points	3
-../Core/Src/pingpong_functions.c:144:6:L_hit	2
-../Core/Src/pingpong_functions.c:154:6:R_hit	2
-../Core/Src/pingpong_functions.c:168:6:Point_Handler	4

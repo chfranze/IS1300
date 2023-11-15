@@ -1,5 +1,0 @@
-../Core/Src/test.c:21:6:Test_program	8	static
-../Core/Src/test.c:34:6:Test_Led	16	static
-../Core/Src/test.c:52:6:Test_Show_Points	8	static
-../Core/Src/test.c:64:6:Test_buttons	16	static
-../Core/Src/test.c:100:6:Test_Point_Handler	32	static
