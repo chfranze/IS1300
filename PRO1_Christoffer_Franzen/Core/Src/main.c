@@ -241,6 +241,7 @@ void Error_Handler(void)
   __disable_irq();
   while (1)
   {
+	  // Test comment
   }
   /* USER CODE END Error_Handler_Debug */
 }
