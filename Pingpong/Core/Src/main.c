@@ -92,7 +92,7 @@ int main(void) {
 	MX_GPIO_Init();
 	MX_USART2_UART_Init();
 	/* USER CODE BEGIN 2 */
-	#undef RUN_TEST_PROGRAM
+	//#undef RUN_TEST_PROGRAM
 	#ifdef RUN_TEST_PROGRAM
   		Test_program();
   	#else
