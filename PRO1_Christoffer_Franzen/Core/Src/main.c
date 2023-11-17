@@ -20,6 +20,7 @@
 #include "main.h"
 #include "usart.h"
 #include "gpio.h"
+#include "test.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -33,7 +34,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define RUN_TEST_PROGRAM
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -88,7 +89,11 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  #ifdef RUN_TEST_PROGRAM
+    Test_program();
+  #else
+    //TODO: Call main program method
+  #endif
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -98,30 +103,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
-	if(HAL_GPIO_ReadPin(SW1_GPIO_Port, SW1_Pin) == 0){
-	  HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_SET); // Led 26
-	}else{
-	  HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_RESET);
-	}
-
-	if(HAL_GPIO_ReadPin(SW2_GPIO_Port, SW2_Pin) == 0){
-	  HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_SET); // Led 26
-	}else{
-	  HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_RESET);
-	}
-
-	if(HAL_GPIO_ReadPin(SW3_GPIO_Port, SW3_Pin) == 0){
-	  HAL_GPIO_WritePin(LED25_GPIO_Port, LED25_Pin, GPIO_PIN_SET); // Led 25
-	}else{
-	  HAL_GPIO_WritePin(LED25_GPIO_Port, LED25_Pin, GPIO_PIN_RESET);
-	}
-
-	if(HAL_GPIO_ReadPin(SW4_GPIO_Port, SW4_Pin) == 0){
-	  HAL_GPIO_WritePin(LED25_GPIO_Port, LED25_Pin, GPIO_PIN_SET); // Led 25
-	}else{
-	  HAL_GPIO_WritePin(LED25_GPIO_Port, LED25_Pin, GPIO_PIN_RESET);
-	}
   }
   /* USER CODE END 3 */
 }
