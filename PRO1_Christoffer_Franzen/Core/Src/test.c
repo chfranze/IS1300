@@ -1,19 +1,33 @@
-/*
- * test.c
- *
- *  Created on: Nov 17, 2023
- *      Author: Christoffer Franzen
- */
-#include "main.h"
+/**
+******************************************************************************
+@brief Test, test program for project
+@file test.c
+@author Christoffer Franzén
+@version 1.0
+@date 17-November-2023
+@brief Test functions for program
+******************************************************************************
+*/
+
 #include "usart.h"
 #include "gpio.h"
 #include "test.h"
 
+/**
+@brief Test_program, main method for the test code
+@param void
+@return void
+*/
 void Test_program(void)
 {
   Test_Led();
 }
 
+/**
+@brief Test_Led, function to test leds and buttons
+@param void
+@return void
+*/
 void Test_Led(void)
 {
 	while (1)
