@@ -8,6 +8,7 @@
 @brief Test functions for program
 ******************************************************************************
 */
+
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -26,48 +27,48 @@
 void Test_program(void)
 {
   //Test_Led();
-  //Test_lights();
-  //Test_Lights2();
-
-    uint8_t SPIData[] = {0x0F, 0x0F, 0x0F};  // 3 bytes of only 1s
-    uint8_t SPIData2[] = {0x00, 0x00, 0x00};  // 3 bytes of only 1s
-
-
-    while(1)
-    {
-        sendSPIdata(&SPIData[0], 3);
-        HAL_Delay(100);
-        sendSPIdata(&SPIData2[0], 3);
-        HAL_Delay(100);
-    }
+  Test_TraficLights();
 }
 
 /**
-@brief sendSPIdata, uses the SPI buss to control trafic lights
+@brief Test_TraficLights, function to test traffic lights
 @param void
 @return void
 */
-void sendSPIdata(uint8_t data[], uint16_t byteSize)
+void Test_TraficLights(void)
 {
-    // Clear the buffer
-    HAL_GPIO_WritePin(SRCLR_GPIO_Port, SRCLR_Pin, GPIO_PIN_RESET);
-    HAL_Delay(1);  // Wait for 1ms
-    HAL_GPIO_WritePin(SRCLR_GPIO_Port, SRCLR_Pin, GPIO_PIN_SET);
+    uint32_t SPIData = 0x000001;
+    uint32_t shiftData;
 
-    // Disable the output
-    HAL_GPIO_WritePin(OUT_EN_GPIO_Port, OUT_EN_Pin, GPIO_PIN_SET);
+    for (int i = 0; i <= 24; i++)
+    {
+        shiftData = SPIData << i;
+        sendSPIdata((uint8_t*)&shiftData, sizeof(shiftData));
+        HAL_Delay(200);
 
-    // Transmit data
-    HAL_SPI_Transmit(&hspi3, data, byteSize, 10);
+        if(i == 24)
+        {
+            for(int j = 15; j >= 0; j--)
+            {
+                shiftData = SPIData << j;
+                sendSPIdata((uint8_t*)&shiftData, sizeof(shiftData));
+                HAL_Delay(200);
+            }
+        }
+    }
 
-    // Trigger registers
-    HAL_GPIO_WritePin(STCP_GPIO_Port, STCP_Pin, GPIO_PIN_SET);
-    HAL_Delay(1);  // Wait for 1ms
-    HAL_GPIO_WritePin(STCP_GPIO_Port, STCP_Pin, GPIO_PIN_RESET);
+    uint8_t data1[3] = {0xff, 0xff, 0xff};
+    uint8_t data2[3] = {0x00, 0x00, 0x00};
 
-    // Enable output
-    HAL_GPIO_WritePin(OUT_EN_GPIO_Port, OUT_EN_Pin, GPIO_PIN_RESET);
+    for (int i = 0; i < 3; i++)
+    {
+        sendSPIdata(&data1[0], 3);
+        HAL_Delay(500);
+        sendSPIdata(&data2[0], 3);
+        HAL_Delay(500);
+    }
 }
+
 
 /**
 @brief Test_Led, function to test leds and buttons

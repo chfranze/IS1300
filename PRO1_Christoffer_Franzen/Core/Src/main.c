@@ -90,10 +90,11 @@ int main(void)
   MX_USART2_UART_Init();
   MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
+  #undef RUN_TEST_PROGRAM
   #ifdef RUN_TEST_PROGRAM
     Test_program();
   #else
-    //TODO: Call main program method
+    Traffic_light();
   #endif
   /* USER CODE END 2 */
 
