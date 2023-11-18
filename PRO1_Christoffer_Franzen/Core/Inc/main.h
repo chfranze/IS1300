@@ -69,6 +69,8 @@ void Error_Handler(void);
 #define SW1_GPIO_Port GPIOC
 #define LED26_Pin GPIO_PIN_2
 #define LED26_GPIO_Port GPIOB
+#define STCP_Pin GPIO_PIN_12
+#define STCP_GPIO_Port GPIOB
 #define SW2_Pin GPIO_PIN_13
 #define SW2_GPIO_Port GPIOB
 #define SW3_Pin GPIO_PIN_14

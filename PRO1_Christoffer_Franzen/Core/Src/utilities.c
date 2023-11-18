@@ -8,3 +8,15 @@
 @brief Contain the functions and definitions related to the lights and more
 ******************************************************************************
 */
+
+#include "spi.h"
+#include "usart.h"
+#include "gpio.h"
+#include "utilities.h"
+
+void sendSPIData(uint16_t data[], uint16_t byteSize) {
+	// TODO: Implement the sendSPIData function
+
+
+
+}

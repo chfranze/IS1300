@@ -8,10 +8,15 @@
 @brief Test functions for program
 ******************************************************************************
 */
+#include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 #include "usart.h"
 #include "gpio.h"
 #include "test.h"
+#include "utilities.h"
+#include "spi.h"
 
 /**
 @brief Test_program, main method for the test code
@@ -21,15 +26,47 @@
 void Test_program(void)
 {
   //Test_Led();
+  //Test_lights();
+  //Test_Lights2();
+
+    uint8_t SPIData[] = {0x0F, 0x0F, 0x0F};  // 3 bytes of only 1s
+    uint8_t SPIData2[] = {0x00, 0x00, 0x00};  // 3 bytes of only 1s
+
+
+    while(1)
+    {
+        sendSPIdata(&SPIData[0], 3);
+        HAL_Delay(100);
+        sendSPIdata(&SPIData2[0], 3);
+        HAL_Delay(100);
+    }
 }
 
 /**
-@brief Test_Led, function to test leds and buttons
+@brief sendSPIdata, uses the SPI buss to control trafic lights
 @param void
 @return void
 */
-void Test_Lights(void){
+void sendSPIdata(uint8_t data[], uint16_t byteSize)
+{
+    // Clear the buffer
+    HAL_GPIO_WritePin(SRCLR_GPIO_Port, SRCLR_Pin, GPIO_PIN_RESET);
+    HAL_Delay(1);  // Wait for 1ms
+    HAL_GPIO_WritePin(SRCLR_GPIO_Port, SRCLR_Pin, GPIO_PIN_SET);
 
+    // Disable the output
+    HAL_GPIO_WritePin(OUT_EN_GPIO_Port, OUT_EN_Pin, GPIO_PIN_SET);
+
+    // Transmit data
+    HAL_SPI_Transmit(&hspi3, data, byteSize, 10);
+
+    // Trigger registers
+    HAL_GPIO_WritePin(STCP_GPIO_Port, STCP_Pin, GPIO_PIN_SET);
+    HAL_Delay(1);  // Wait for 1ms
+    HAL_GPIO_WritePin(STCP_GPIO_Port, STCP_Pin, GPIO_PIN_RESET);
+
+    // Enable output
+    HAL_GPIO_WritePin(OUT_EN_GPIO_Port, OUT_EN_Pin, GPIO_PIN_RESET);
 }
 
 /**

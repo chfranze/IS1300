@@ -12,6 +12,6 @@
 #ifndef INC_UTILITIES_H_
 #define INC_UTILITIES_H_
 
-
+void sendSPIData(uint16_t data[], uint16_t byteSize);
 
 #endif /* INC_UTILITIES_H_ */

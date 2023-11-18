@@ -14,5 +14,7 @@
 
 void Test_program(void);
 void Test_Led(void);
+void Test_Lights2(void);
+void sendSPIdata(uint8_t data[], uint16_t byteSize);
 
 #endif /* INC_TEST_H_ */
