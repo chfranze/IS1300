@@ -75,6 +75,10 @@ void Error_Handler(void);
 #define SW3_GPIO_Port GPIOB
 #define LED25_Pin GPIO_PIN_15
 #define LED25_GPIO_Port GPIOB
+#define OUT_EN_Pin GPIO_PIN_7
+#define OUT_EN_GPIO_Port GPIOC
+#define SRCLR_Pin GPIO_PIN_9
+#define SRCLR_GPIO_Port GPIOC
 #define SW4_Pin GPIO_PIN_10
 #define SW4_GPIO_Port GPIOA
 #define TMS_Pin GPIO_PIN_13

@@ -18,9 +18,9 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "spi.h"
 #include "usart.h"
 #include "gpio.h"
-#include "test.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -88,6 +88,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
+  MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
   #ifdef RUN_TEST_PROGRAM
     Test_program();

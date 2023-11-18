@@ -20,7 +20,16 @@
 */
 void Test_program(void)
 {
-  Test_Led();
+  //Test_Led();
+}
+
+/**
+@brief Test_Led, function to test leds and buttons
+@param void
+@return void
+*/
+void Test_Lights(void){
+
 }
 
 /**
