@@ -18,6 +18,7 @@
 #include "test.h"
 #include "utilities.h"
 #include "spi.h"
+#include "switch_handlers.h"
 
 /**
 @brief Test_program, main method for the test code
@@ -30,18 +31,15 @@ void Test_program(void)
   //Test_TraficLights();
   //lightUpLED1();
   //lightUpLED();
-	Test_lightUpLEDs();
-
-  //uint8_t leds_to_light[5][3] = { {LED1}, {LED6}, {LED9}, {LED13}, {LED22} };
-  //lightUpLED(leds_to_light, 5);
+	//Test_GPIOInputs();
+    Test_lightUpLEDs();
 }
 
-void lightUpLED(void) {
-    uint8_t data[3] = {0x20, 0x00, 0x00};
-    uint16_t byteSize = sizeof(data);
-    sendSPIdata(data, byteSize);
-}
-
+/**
+@brief Test_lightUpLEDs, function to test lighting up LEDs
+@param void
+@return void
+*/
 void Test_lightUpLEDs(void)
 {
 	uint8_t leds_to_light[5][3] = { {LED1}, {LED6}, {LED9}, {LED13}, {LED22} };
@@ -51,7 +49,7 @@ void Test_lightUpLEDs(void)
     {
     	lightUpLEDs(leds_to_light, 5);
         HAL_Delay(500);
-        sendSPIdata(no_leds_to_light, 3);
+        lightUpLEDs(no_leds_to_light, 1);
         HAL_Delay(500);
     }
 }
@@ -96,6 +94,11 @@ void Test_TraficLights(void)
     }
 }
 
+/**
+@brief Test_GPIOLeds, function to test GPIO LEDs
+@param void
+@return void
+*/
 void Test_GPIOLeds(void)
 {
     for (int i = 0; i < 3; i++)
@@ -109,60 +112,64 @@ void Test_GPIOLeds(void)
     }
 }
 
-void Test_GPIOButtons(void)
-{
-
-}
-
-void Test_LedOn(void)
-{
-
-}
-
-
 /**
-@brief Test_Led, function to test leds and buttons
+@brief Test_GPIOInputs, function to test GPIO inputs
 @param void
 @return void
 */
-void Test_Led(void)
+void Test_GPIOInputs(void)
 {
 	while (1)
-	  {
-		if(HAL_GPIO_ReadPin(SW1_GPIO_Port, SW1_Pin) == 0){
-		  HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_SET); // Led 26
+	{
+		if(SW1_switch()){
+			HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_SET);
 		}else{
-		  HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_RESET);
 		}
 
-		if(HAL_GPIO_ReadPin(SW2_GPIO_Port, SW2_Pin) == 0){
-		  HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_SET); // Led 26
+		if(SW2_switch()){
+			HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_SET);
 		}else{
-		  HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_RESET);
 		}
 
-		if(HAL_GPIO_ReadPin(SW3_GPIO_Port, SW3_Pin) == 0){
-		  HAL_GPIO_WritePin(LED25_GPIO_Port, LED25_Pin, GPIO_PIN_SET); // Led 25
+		if(SW3_switch()){
+			HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_SET);
 		}else{
-		  HAL_GPIO_WritePin(LED25_GPIO_Port, LED25_Pin, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_RESET);
 		}
 
-		if(HAL_GPIO_ReadPin(SW4_GPIO_Port, SW4_Pin) == 0){
-		  HAL_GPIO_WritePin(LED25_GPIO_Port, LED25_Pin, GPIO_PIN_SET); // Led 25
+		if(SW4_switch()){
+			HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_SET);
 		}else{
-		  HAL_GPIO_WritePin(LED25_GPIO_Port, LED25_Pin, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_RESET);
 		}
 
-		if(HAL_GPIO_ReadPin(SW56_GPIO_Port, SW56_Pin) == 0){
-		  HAL_GPIO_WritePin(LED25_GPIO_Port, LED25_Pin, GPIO_PIN_SET); // Led 25
+		if(SW56_hit()){
+			HAL_GPIO_WritePin(LED25_GPIO_Port, LED25_Pin, GPIO_PIN_SET);
 		}else{
-		  HAL_GPIO_WritePin(LED25_GPIO_Port, LED25_Pin, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(LED25_GPIO_Port, LED25_Pin, GPIO_PIN_RESET);
 		}
 
-		if(HAL_GPIO_ReadPin(SW78_GPIO_Port, SW78_Pin) == 0){
-		  HAL_GPIO_WritePin(LED25_GPIO_Port, LED25_Pin, GPIO_PIN_SET); // Led 25
+		if(SW78_hit()){
+			HAL_GPIO_WritePin(LED25_GPIO_Port, LED25_Pin, GPIO_PIN_SET);
 		}else{
-		  HAL_GPIO_WritePin(LED25_GPIO_Port, LED25_Pin, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(LED25_GPIO_Port, LED25_Pin, GPIO_PIN_RESET);
 		}
-	  }
+
+		if(SW56_hit() && SW78_hit()){
+			HAL_GPIO_WritePin(LED25_GPIO_Port, LED25_Pin, GPIO_PIN_RESET);
+			break;
+		}
+	}
+}
+
+/**
+@brief Test_LedOn, function to test LED on
+@param void
+@return void
+*/
+void Test_LedOn(void)
+{
+
 }

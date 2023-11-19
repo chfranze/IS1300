@@ -20,5 +20,6 @@ void Test_TraficLights(void);
 void lightUpLED1(void);
 void lightUpLED(uint8_t leds[][3], size_t num_leds);
 void Test_lightUpLEDs(void);
+void Test_GPIOInputs(void);
 
 #endif /* INC_TEST_H_ */

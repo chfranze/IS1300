@@ -69,5 +69,5 @@ void lightUpLEDs(uint8_t leds[][3], size_t num_leds) {
 void Led_on(uint8_t Lednr)
 {
 
-}
 
+}
