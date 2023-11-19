@@ -32,7 +32,8 @@ void Test_program(void)
   //lightUpLED1();
   //lightUpLED();
 	//Test_GPIOInputs();
-    Test_lightUpLEDs();
+    //Test_lightUpLEDs();
+	Test_LedOn();
 }
 
 /**
@@ -171,5 +172,17 @@ void Test_GPIOInputs(void)
 */
 void Test_LedOn(void)
 {
+	Led_on(1);
+	Led_on(7);
+	Led_on(14);
+	Led_on(19);
+	Led_on(23);
 
+	for (int i = 0; i < 10; i++)
+	{
+		Led_on(1);
+		HAL_Delay(500);
+		led_off(1);
+		HAL_Delay(500);
+	}
 }
