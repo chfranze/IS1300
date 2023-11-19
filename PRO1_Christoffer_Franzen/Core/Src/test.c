@@ -27,8 +27,35 @@
 void Test_program(void)
 {
   //Test_Led();
-  Test_TraficLights();
+  //Test_TraficLights();
+  //lightUpLED1();
+  //lightUpLED();
+	Test_lightUpLEDs();
+
+  //uint8_t leds_to_light[5][3] = { {LED1}, {LED6}, {LED9}, {LED13}, {LED22} };
+  //lightUpLED(leds_to_light, 5);
 }
+
+void lightUpLED(void) {
+    uint8_t data[3] = {0x20, 0x00, 0x00};
+    uint16_t byteSize = sizeof(data);
+    sendSPIdata(data, byteSize);
+}
+
+void Test_lightUpLEDs(void)
+{
+	uint8_t leds_to_light[5][3] = { {LED1}, {LED6}, {LED9}, {LED13}, {LED22} };
+	uint8_t no_leds_to_light[1][3] = { {NO_LEDs} };
+
+    for (int i = 0; i < 3; i++)
+    {
+    	lightUpLEDs(leds_to_light, 5);
+        HAL_Delay(500);
+        sendSPIdata(no_leds_to_light, 3);
+        HAL_Delay(500);
+    }
+}
+
 
 /**
 @brief Test_TraficLights, function to test traffic lights
@@ -57,16 +84,39 @@ void Test_TraficLights(void)
         }
     }
 
-    uint8_t data1[3] = {0xff, 0xff, 0xff};
-    uint8_t data2[3] = {0x00, 0x00, 0x00};
+    uint8_t all_leds_to_light[1][3] = { {ALL_LEDs} };
+    uint8_t no_leds_to_light[1][3] = { {NO_LEDs} };
 
     for (int i = 0; i < 3; i++)
     {
-        sendSPIdata(&data1[0], 3);
+        sendSPIdata(all_leds_to_light, 3);
         HAL_Delay(500);
-        sendSPIdata(&data2[0], 3);
+        sendSPIdata(no_leds_to_light, 3);
         HAL_Delay(500);
     }
+}
+
+void Test_GPIOLeds(void)
+{
+    for (int i = 0; i < 3; i++)
+    {
+    	HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_SET);
+    	HAL_GPIO_WritePin(LED25_GPIO_Port, LED25_Pin, GPIO_PIN_SET);
+        HAL_Delay(500);
+        HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(LED25_GPIO_Port, LED25_Pin, GPIO_PIN_RESET);
+        HAL_Delay(500);
+    }
+}
+
+void Test_GPIOButtons(void)
+{
+
+}
+
+void Test_LedOn(void)
+{
+
 }
 
 
