@@ -13,13 +13,10 @@
 #define INC_TEST_H_
 
 void Test_program(void);
-void Test_Led(void);
-void Test_Lights2(void);
-void sendSPIdata(uint8_t data[], uint16_t byteSize);
-void Test_TraficLights(void);
-void lightUpLED1(void);
-void lightUpLED(uint8_t leds[][3], size_t num_leds);
 void Test_lightUpLEDs(void);
+void Test_TraficLights(void);
+void Test_GPIOLeds(void);
 void Test_GPIOInputs(void);
+void Test_LedOn(void);
 
 #endif /* INC_TEST_H_ */
