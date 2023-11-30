@@ -48,6 +48,7 @@
 
 uint8_t varBlink1 = 0;
 uint8_t varBlink2 = 0;
+uint8_t varBlink3 = 0;
 
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
@@ -55,7 +56,7 @@ osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
+  .priority = (osPriority_t) osPriorityLow,
 };
 /* Definitions for Blink1Task */
 osThreadId_t Blink1TaskHandle;
@@ -78,6 +79,13 @@ const osThreadAttr_t TriggTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityHigh,
 };
+/* Definitions for UserbuttonTask */
+osThreadId_t UserbuttonTaskHandle;
+const osThreadAttr_t UserbuttonTask_attributes = {
+  .name = "UserbuttonTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityHigh,
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -88,6 +96,7 @@ void StartDefaultTask(void *argument);
 void Blink1(void *argument);
 void Blink2(void *argument);
 void Trigg(void *argument);
+void Userbutton(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -130,6 +139,9 @@ void MX_FREERTOS_Init(void) {
   /* creation of TriggTask */
   TriggTaskHandle = osThreadNew(Trigg, NULL, &TriggTask_attributes);
 
+  /* creation of UserbuttonTask */
+  UserbuttonTaskHandle = osThreadNew(Userbutton, NULL, &UserbuttonTask_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -167,35 +179,20 @@ void StartDefaultTask(void *argument)
 /* USER CODE END Header_Blink1 */
 void Blink1(void *argument)
 {
-	/* USER CODE BEGIN Blink1 */
-	/* Infinite loop */
-
-	/* New */
+  /* USER CODE BEGIN Blink1 */
 	TickType_t xLastWakeTime;
 	const TickType_t xPeriod = pdMS_TO_TICKS(10) ; // ms to ticks
 	// Initialise the xLastWakeTime variable with the current time.
 	xLastWakeTime = xTaskGetTickCount();
-
 	/* Infinite loop */
 	for(;;)
 	{
-		varBlink1 = 1;
-		waitCycle(200000);
-		varBlink1 = 0;
-		vTaskDelayUntil( &xLastWakeTime, xPeriod );
+	varBlink1 = 1;
+	wait_cycles(200000);
+	varBlink1 = 0;
+	vTaskDelayUntil( &xLastWakeTime, xPeriod );
 	}
-
-	/* Old code
-	for(;;)
-	{
-		varBlink1 = 1;
-		wait_cycles(200000);
-		varBlink1 = 0;
-		vTaskDelay(10);
-	}
-	*/
-
-	/* USER CODE END Blink1 */
+  /* USER CODE END Blink1 */
 }
 
 /* USER CODE BEGIN Header_Blink2 */
@@ -207,34 +204,20 @@ void Blink1(void *argument)
 /* USER CODE END Header_Blink2 */
 void Blink2(void *argument)
 {
-	/* USER CODE BEGIN Blink2 */
-	/* Infinite loop */
-
-	/* New TODO: with a period of 20 ms */
+  /* USER CODE BEGIN Blink2 */
 	TickType_t xLastWakeTime;
-	const TickType_t xPeriod = pdMS_TO_TICKS(10) ; // ms to ticks
+	const TickType_t xPeriod = pdMS_TO_TICKS(20) ; // ms to ticks
 	// Initialise the xLastWakeTime variable with the current time.
 	xLastWakeTime = xTaskGetTickCount();
-
 	/* Infinite loop */
 	for(;;)
 	{
-		varBlink1 = 1;
-		waitCycle(200000);
-		varBlink1 = 0;
-		vTaskDelayUntil( &xLastWakeTime, xPeriod );
+	varBlink2 = 1;
+	wait_cycles(400000);
+	varBlink2 = 0;
+	vTaskDelayUntil( &xLastWakeTime, xPeriod );
 	}
-
-	/* Old code
-	for(;;)
-	{
-		varBlink2 = 1;
-		wait_cycles(400000);
-		varBlink2 = 0;
-		vTaskDelay(20);
-	}
-	*/
-	/* USER CODE END Blink2 */
+  /* USER CODE END Blink2 */
 }
 
 /* USER CODE BEGIN Header_Trigg */
@@ -246,7 +229,7 @@ void Blink2(void *argument)
 /* USER CODE END Header_Trigg */
 void Trigg(void *argument)
 {
-	/* USER CODE BEGIN Trigg */
+  /* USER CODE BEGIN Trigg */
 	TickType_t xLastWakeTime;
 	const TickType_t xPeriod = pdMS_TO_TICKS(200) ; // ms to ticks
 	// Initialise the xLastWakeTime variable with the current time.
@@ -258,14 +241,37 @@ void Trigg(void *argument)
 		vTaskDelayUntil( &xLastWakeTime, xPeriod );
 		wait_cycles(10); //add a breakpoint in this line
 	}
-	/* USER CODE END Trigg */
+  /* USER CODE END Trigg */
 }
 
-/* Private application code --------------------------------------------------*/
+/* USER CODE BEGIN Header_Userbutton */
+/**
+ * @brief Function implementing the UserbuttonTask thread.
+ * @param argument: Not used
+ * @retval None
+ */
+/* USER CODE END Header_Userbutton */
+void Userbutton(void *argument) {
+	/* USER CODE BEGIN Userbutton */
+	TickType_t xLastWakeTime;
+	const TickType_t xPeriod = pdMS_TO_TICKS(20);
+	// Initialise the xLastWakeTime variable with the current time.
+	xLastWakeTime = xTaskGetTickCount();
+	/* Infinite loop */
+	for (;;) {
+		if (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_RESET) {
+			varBlink3 = 1;
+			wait_cycles(250000);
+			varBlink3 = 0;
+		}
+		vTaskDelayUntil(&xLastWakeTime, xPeriod);
+	}
+	/* USER CODE END Userbutton */
+}
+
 /* USER CODE BEGIN Application */
 void wait_cycles( uint32_t n ) {
-	uint32_t l = n/3; //cycles per loop is 3
-	asm volatile( "0:" "SUBS %[count], 1;" "BNE 0b;" :[count]"+r"(l) );
+ uint32_t l = n/3; //cycles per loop is 3
+ asm volatile( "0:" "SUBS %[count], 1;" "BNE 0b;" :[count]"+r"(l) );
 }
 /* USER CODE END Application */
-
