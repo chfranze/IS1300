@@ -65,13 +65,6 @@ const osThreadAttr_t Blink1Task_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for Blink2Task */
-osThreadId_t Blink2TaskHandle;
-const osThreadAttr_t Blink2Task_attributes = {
-  .name = "Blink2Task",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
 /* Definitions for TriggTask */
 osThreadId_t TriggTaskHandle;
 const osThreadAttr_t TriggTask_attributes = {
@@ -94,7 +87,6 @@ void wait_cycles( uint32_t n );
 
 void StartDefaultTask(void *argument);
 void Blink1(void *argument);
-void Blink2(void *argument);
 void Trigg(void *argument);
 void Userbutton(void *argument);
 
@@ -132,9 +124,6 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of Blink1Task */
   Blink1TaskHandle = osThreadNew(Blink1, NULL, &Blink1Task_attributes);
-
-  /* creation of Blink2Task */
-  Blink2TaskHandle = osThreadNew(Blink2, NULL, &Blink2Task_attributes);
 
   /* creation of TriggTask */
   TriggTaskHandle = osThreadNew(Trigg, NULL, &TriggTask_attributes);
@@ -181,43 +170,25 @@ void Blink1(void *argument)
 {
   /* USER CODE BEGIN Blink1 */
 	TickType_t xLastWakeTime;
-	const TickType_t xPeriod = pdMS_TO_TICKS(10) ; // ms to ticks
+	const TickType_t xPeriod = pdMS_TO_TICKS(100) ; // ms to ticks
 	// Initialise the xLastWakeTime variable with the current time.
 	xLastWakeTime = xTaskGetTickCount();
 	/* Infinite loop */
 	for(;;)
 	{
-	varBlink1 = 1;
-	wait_cycles(200000);
-	varBlink1 = 0;
-	vTaskDelayUntil( &xLastWakeTime, xPeriod );
+		if(varBlink1 == 1)
+		{
+			HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+			varBlink1 = 0;
+		}
+		else
+		{
+			HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+			varBlink1 = 1;
+		}
+		vTaskDelayUntil( &xLastWakeTime, xPeriod );
 	}
   /* USER CODE END Blink1 */
-}
-
-/* USER CODE BEGIN Header_Blink2 */
-/**
-* @brief Function implementing the Blink2Task thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_Blink2 */
-void Blink2(void *argument)
-{
-  /* USER CODE BEGIN Blink2 */
-	TickType_t xLastWakeTime;
-	const TickType_t xPeriod = pdMS_TO_TICKS(20) ; // ms to ticks
-	// Initialise the xLastWakeTime variable with the current time.
-	xLastWakeTime = xTaskGetTickCount();
-	/* Infinite loop */
-	for(;;)
-	{
-	varBlink2 = 1;
-	wait_cycles(400000);
-	varBlink2 = 0;
-	vTaskDelayUntil( &xLastWakeTime, xPeriod );
-	}
-  /* USER CODE END Blink2 */
 }
 
 /* USER CODE BEGIN Header_Trigg */
@@ -251,27 +222,34 @@ void Trigg(void *argument)
  * @retval None
  */
 /* USER CODE END Header_Userbutton */
-void Userbutton(void *argument) {
-	/* USER CODE BEGIN Userbutton */
+void Userbutton(void *argument)
+{
+  /* USER CODE BEGIN Userbutton */
 	TickType_t xLastWakeTime;
 	const TickType_t xPeriod = pdMS_TO_TICKS(20);
 	// Initialise the xLastWakeTime variable with the current time.
 	xLastWakeTime = xTaskGetTickCount();
 	/* Infinite loop */
 	for (;;) {
-		if (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_RESET) {
-			varBlink3 = 1;
-			wait_cycles(250000);
-			varBlink3 = 0;
+		if (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_RESET)
+		{
+			vTaskSuspend(Blink1TaskHandle);
+			HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+		}
+		else
+		{
+			vTaskResume(Blink1TaskHandle);
 		}
 		vTaskDelayUntil(&xLastWakeTime, xPeriod);
 	}
-	/* USER CODE END Userbutton */
+  /* USER CODE END Userbutton */
 }
 
+/* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 void wait_cycles( uint32_t n ) {
  uint32_t l = n/3; //cycles per loop is 3
  asm volatile( "0:" "SUBS %[count], 1;" "BNE 0b;" :[count]"+r"(l) );
 }
 /* USER CODE END Application */
+
