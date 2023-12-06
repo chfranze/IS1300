@@ -23,10 +23,11 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "test.h"
+#include "utilities.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+void wait_cycles( uint32_t n );
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -115,23 +116,25 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
+	TickType_t xLastWakeTime;
+	const TickType_t xPeriod = pdMS_TO_TICKS(10) ; // ms to ticks
+
   /* Infinite loop */
+	xLastWakeTime = xTaskGetTickCount();
+
   for(;;)
   {
-	  //#undef RUN_TEST_PROGRAM
-	  #ifdef RUN_TEST_PROGRAM
-	    Test_program();
-	  #else
-	    Traffic_light();
-	  #endif
-
-    //osDelay(1);
+      vTaskDelay(pdMS_TO_TICKS(100));  // Delay for 1 second
+      // Add more LED-related tasks as needed
   }
   /* USER CODE END StartDefaultTask */
 }
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-
+void wait_cycles( uint32_t n ) {
+	uint32_t l = n/3; //cycles per loop is 3
+	asm volatile( "0:" "SUBS %[count], 1;" "BNE 0b;" :[count]"+r"(l) );
+}
 /* USER CODE END Application */
 

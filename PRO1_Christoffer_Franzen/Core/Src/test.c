@@ -172,17 +172,17 @@ void Test_GPIOInputs(void)
 */
 void Test_LedOn(void)
 {
-	Led_on(1);
-	Led_on(7);
-	Led_on(14);
-	Led_on(19);
-	Led_on(23);
+	ledOn(1);
+	ledOn(7);
+	ledOn(14);
+	ledOn(19);
+	ledOn(23);
 
 	for (int i = 0; i < 10; i++)
 	{
-		Led_on(1);
+		ledOn(1);
 		HAL_Delay(500);
-		led_off(1);
+		ledOff(1);
 		HAL_Delay(500);
 	}
 }

@@ -17,16 +17,17 @@
 #include "main.h"
 #include "utilities.h"
 
-void Traffic_light(void)
-{
-    uint8_t data1[3] = {0xff, 0xff, 0xff};
-    uint8_t data2[3] = {0x00, 0x00, 0x00};
+uint8_t toggleFreq = 0;
+uint8_t pedestrianDelay = 0;
+uint8_t walkingDelay = 0;
+uint8_t orangeDelay = 0;
 
-    for (int i = 0; i < 30; i++)
-    {
-        sendSPIdata(&data1[0], 3);
-        HAL_Delay(500);
-        sendSPIdata(&data2[0], 3);
-        HAL_Delay(500);
-    }
+void TrafficLightInitialization(void)
+{
+	int InitializeLEDs[] = {19, 20, 6 , 12};
+
+	for(int i = 0; i < 4; i++)
+	{
+		ledOn(InitializeLEDs[i]);
+	}
 }
