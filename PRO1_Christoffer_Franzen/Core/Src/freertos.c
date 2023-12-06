@@ -22,8 +22,14 @@
 #include "task.h"
 #include "main.h"
 #include "cmsis_os.h"
-#include "test.h"
+
+#include "switch_handlers.h"
 #include "utilities.h"
+#include "traffic_light.h"
+
+#include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -38,6 +44,7 @@ void wait_cycles( uint32_t n );
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define RUN_TEST_PROGRAM
+#undef RUN_TEST_PROGRAM
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -56,6 +63,34 @@ const osThreadAttr_t defaultTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for SendSPITask */
+osThreadId_t SendSPITaskHandle;
+const osThreadAttr_t SendSPITask_attributes = {
+  .name = "SendSPITask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for RoadTask1 */
+osThreadId_t RoadTask1Handle;
+const osThreadAttr_t RoadTask1_attributes = {
+  .name = "RoadTask1",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for RoadTask2 */
+osThreadId_t RoadTask2Handle;
+const osThreadAttr_t RoadTask2_attributes = {
+  .name = "RoadTask2",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for Initialization */
+osThreadId_t InitializationHandle;
+const osThreadAttr_t Initialization_attributes = {
+  .name = "Initialization",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityRealtime,
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -63,6 +98,10 @@ const osThreadAttr_t defaultTask_attributes = {
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
+void SendSPIdataTask(void *argument);
+void RoadCrossingTask1(void *argument);
+void RoadCrossingTask2(void *argument);
+void InitializationTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -96,6 +135,18 @@ void MX_FREERTOS_Init(void) {
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
+  /* creation of SendSPITask */
+  SendSPITaskHandle = osThreadNew(SendSPIdataTask, NULL, &SendSPITask_attributes);
+
+  /* creation of RoadTask1 */
+  RoadTask1Handle = osThreadNew(RoadCrossingTask1, NULL, &RoadTask1_attributes);
+
+  /* creation of RoadTask2 */
+  RoadTask2Handle = osThreadNew(RoadCrossingTask2, NULL, &RoadTask2_attributes);
+
+  /* creation of Initialization */
+  InitializationHandle = osThreadNew(InitializationTask, NULL, &Initialization_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -128,6 +179,112 @@ void StartDefaultTask(void *argument)
       // Add more LED-related tasks as needed
   }
   /* USER CODE END StartDefaultTask */
+}
+
+/* USER CODE BEGIN Header_SendSPIdataTask */
+/**
+* @brief Function implementing the SendSPITask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_SendSPIdataTask */
+void SendSPIdataTask(void *argument)
+{
+  /* USER CODE BEGIN SendSPIdataTask */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END SendSPIdataTask */
+}
+
+/* USER CODE BEGIN Header_RoadCrossingTask1 */
+/**
+* @brief Function implementing the RoadTask1 thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_RoadCrossingTask1 */
+void RoadCrossingTask1(void *argument)
+{
+  /* USER CODE BEGIN RoadCrossingTask1 */
+  TickType_t xLastWakeTime;
+  const TickType_t xPeriod = pdMS_TO_TICKS(10); // ms to ticks
+  TickType_t xToggleTime = pdMS_TO_TICKS(toggleFreq); // Convert toggleFreq ms to ticks
+  TickType_t xTimeSinceLastToggle = 0;
+  bool isPedestrianCrossingGreen = false;
+
+  /* Infinite loop */
+  xLastWakeTime = xTaskGetTickCount();
+
+  for(;;)
+  {
+    // Check if the pedestrian crossing is green
+    if(isPedestrianCrossingGreen)
+    {
+      // Stop toggling the indicator light
+      ledOff(23);
+      ledOn(21);
+      break; // Exit the loop when the pedestrian crossing is green
+    }
+
+    if(SW78_hit() && !isPedestrianCrossingGreen)
+    {
+      // If enough time has passed since the last toggle
+      if(xTimeSinceLastToggle >= xToggleTime)
+      {
+        // Toggle the indicator light
+        //toggleIndicatorLight();
+        ledOn(23);
+
+        // Reset the time since the last toggle
+        xTimeSinceLastToggle = 0;
+      }
+    }
+
+    vTaskDelayUntil(&xLastWakeTime, xPeriod);
+    xTimeSinceLastToggle += xPeriod;
+  }
+  /* USER CODE END RoadCrossingTask1 */
+}
+
+
+/* USER CODE BEGIN Header_RoadCrossingTask2 */
+/**
+* @brief Function implementing the RoadTask2 thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_RoadCrossingTask2 */
+void RoadCrossingTask2(void *argument)
+{
+  /* USER CODE BEGIN RoadCrossingTask2 */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END RoadCrossingTask2 */
+}
+
+/* USER CODE BEGIN Header_InitializationTask */
+/**
+* @brief Function implementing the Initialization thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_InitializationTask */
+void InitializationTask(void *argument)
+{
+  /* USER CODE BEGIN InitializationTask */
+	#ifdef RUN_TEST_PROGRAM
+    	Test_program();
+    #else
+    	TrafficLightInitialization();
+    #endif
+    vTaskDelete(NULL);
+  /* USER CODE END InitializationTask */
 }
 
 /* Private application code --------------------------------------------------*/

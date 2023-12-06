@@ -35,7 +35,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define RUN_TEST_PROGRAM
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -92,12 +92,7 @@ int main(void)
   MX_USART2_UART_Init();
   MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
-  #undef RUN_TEST_PROGRAM
-  #ifdef RUN_TEST_PROGRAM
-    Test_program();
-  #else
-    TrafficLightInitialization();
-  #endif
+
   /* USER CODE END 2 */
 
   /* Init scheduler */

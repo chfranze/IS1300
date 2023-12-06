@@ -9,6 +9,10 @@
 ******************************************************************************
 */
 
+#include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
+
 #ifndef INC_SWITCH_HANDLERS_H_
 #define INC_SWITCH_HANDLERS_H_
 

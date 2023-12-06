@@ -9,14 +9,19 @@
 ******************************************************************************
 */
 
+#include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
+
 #ifndef INC_TRAFFIC_LIGHT_H_
 #define INC_TRAFFIC_LIGHT_H_
 
-uint8_t toggleFreq;       // Frequency of toggle in ms
-uint8_t pedestrianDelay;  // Delay in ms after the pedestrian pushed the button
-uint8_t walkingDelay;     // Time in ms the pedestrian signal stays green
-uint8_t orangeDelay;      // Time in ms a car signal remains orange
+extern uint8_t toggleFreq;       // Frequency of toggle in ms
+extern uint8_t pedestrianDelay;  // Delay in ms after the pedestrian pushed the button
+extern uint8_t walkingDelay;     // Time in ms the pedestrian signal stays green
+extern uint8_t orangeDelay;      // Time in ms a car signal remains orange
 
 void TrafficLightInitialization(void);
+void TrafficLightStateMachine(void);
 
 #endif /* INC_TRAFFIC_LIGHT_H_ */

@@ -2,8 +2,9 @@
 CAD.formats=
 CAD.pinconfig=
 CAD.provider=
-FREERTOS.IPParameters=Tasks01,configUSE_NEWLIB_REENTRANT,configTOTAL_HEAP_SIZE
-FREERTOS.Tasks01=defaultTask,24,128,StartDefaultTask,Default,NULL,Dynamic,NULL,NULL
+FREERTOS.FootprintOK=true
+FREERTOS.IPParameters=Tasks01,configUSE_NEWLIB_REENTRANT,configTOTAL_HEAP_SIZE,FootprintOK
+FREERTOS.Tasks01=defaultTask,24,128,StartDefaultTask,Default,NULL,Dynamic,NULL,NULL;SendSPITask,24,128,SendSPIdataTask,Default,NULL,Dynamic,NULL,NULL;RoadTask1,24,128,RoadCrossingTask1,Default,NULL,Dynamic,NULL,NULL;RoadTask2,24,128,RoadCrossingTask2,Default,NULL,Dynamic,NULL,NULL;Initialization,48,128,InitializationTask,Default,NULL,Dynamic,NULL,NULL
 FREERTOS.configTOTAL_HEAP_SIZE=4000
 FREERTOS.configUSE_NEWLIB_REENTRANT=1
 File.Version=6
@@ -282,4 +283,5 @@ VP_SYS_VS_tim1.Mode=TIM1
 VP_SYS_VS_tim1.Signal=SYS_VS_tim1
 board=NUCLEO-L476RG
 boardIOC=true
+rtos.0.ip=FREERTOS
 isbadioc=false
