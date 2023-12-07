@@ -54,7 +54,9 @@ void wait_cycles( uint32_t n );
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-
+uint8_t varBlink1 = 0;
+uint8_t varBlink2 = 0;
+uint8_t varBlink3 = 0;
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -211,42 +213,68 @@ void RoadCrossingTask1(void *argument)
   /* USER CODE BEGIN RoadCrossingTask1 */
   TickType_t xLastWakeTime;
   const TickType_t xPeriod = pdMS_TO_TICKS(10); // ms to ticks
-  TickType_t xToggleTime = pdMS_TO_TICKS(toggleFreq); // Convert toggleFreq ms to ticks
-  TickType_t xTimeSinceLastToggle = 0;
-  bool isPedestrianCrossingGreen = false;
 
   /* Infinite loop */
   xLastWakeTime = xTaskGetTickCount();
 
+  TrafficLightStateMachine();
+
+  /*
   for(;;)
   {
-    // Check if the pedestrian crossing is green
     if(isPedestrianCrossingGreen)
     {
-      // Stop toggling the indicator light
-      ledOff(23);
-      ledOn(21);
-      break; // Exit the loop when the pedestrian crossing is green
+      ledOff(23);  // Turn off blue light
+      ledOff(19);
+      ledOn(21);   // Turn on green light
+      ledOff(12);
+      ledOff(6);
+      ledOn(10);
+      ledOn(4);
     }
+
+    if(!isPedestrianCrossingGreen)
+    {
+    	if(varBlink1 == 1)
+    	{
+    	    ledOn(23);
+    		varBlink1 = 0;
+    	}
+    	else
+    	{
+    	    ledOff(23);
+    		varBlink1 = 1;
+    	}
+    }
+
+	vTaskDelayUntil( &xLastWakeTime, xPeriod );
 
     if(SW78_hit() && !isPedestrianCrossingGreen)
     {
-      // If enough time has passed since the last toggle
-      if(xTimeSinceLastToggle >= xToggleTime)
-      {
-        // Toggle the indicator light
-        //toggleIndicatorLight();
-        ledOn(23);
+      isButtonPressed = true;
+      xTimeSinceLastToggle = 0;
+    }
 
-        // Reset the time since the last toggle
-        xTimeSinceLastToggle = 0;
+    if(isButtonPressed)
+    {
+      xTimeSinceLastToggle += xPeriod;
+
+      if(xTimeSinceLastToggle >= pedestrianDelay)
+      {
+        isPedestrianCrossingGreen = true;
+        isButtonPressed = false;
       }
+    }
+    else if (!SW78_hit() && isPedestrianCrossingGreen)
+    {
+      isPedestrianCrossingGreen = false;
     }
 
     vTaskDelayUntil(&xLastWakeTime, xPeriod);
-    xTimeSinceLastToggle += xPeriod;
   }
+  */
   /* USER CODE END RoadCrossingTask1 */
+
 }
 
 

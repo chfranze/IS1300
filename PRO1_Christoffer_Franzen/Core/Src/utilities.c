@@ -26,6 +26,12 @@ static TaskHandle_t ledTaskHandle = NULL;
 
 uint8_t LED_arr[24][3] = {LED1, LED2, LED3, LED4, LED5, LED6, LED7, LED8, LED9, LED10, LED11, LED12, LED13, LED14, LED15, LED16, LED17, LED18, LED19, LED20, LED21, LED22, LED23, LED24};
 
+// Define a struct for LED operations
+typedef struct {
+    uint8_t ledNumber;
+    bool turnOn;
+} LedOperation;
+
 /**
 @brief sendSPIdata, uses the SPI3 bus to send data to a 74HC595D shift register, which is used to control traffic lights.
 @param data[] An array of bytes to be sent via SPI.
