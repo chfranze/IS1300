@@ -21,7 +21,10 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-static uint8_t data[3] = {0x00, 0x00, 0x00};
+uint8_t data[3] = {0x00, 0x00, 0x00};
+uint8_t lastData[3] = {0x00, 0x00, 0x00};
+
+
 static TaskHandle_t ledTaskHandle = NULL;
 
 uint8_t LED_arr[24][3] = {LED1, LED2, LED3, LED4, LED5, LED6, LED7, LED8, LED9, LED10, LED11, LED12, LED13, LED14, LED15, LED16, LED17, LED18, LED19, LED20, LED21, LED22, LED23, LED24};
@@ -73,8 +76,8 @@ void lightUpLEDs(uint8_t leds[][3], size_t num_leds) {
         data[2] |= leds[i][2];
     }
 
-    uint16_t byteSize = sizeof(data);
-    sendSPIdata(data, byteSize);
+    //uint16_t byteSize = sizeof(data);
+    //sendSPIdata(data, byteSize);
 }
 
 /**
@@ -90,8 +93,8 @@ void ledOn(uint8_t Lednr)
         data[2] |= LED_arr[Lednr - 1][2];
     }
 
-    uint16_t byteSize = sizeof(data);
-    sendSPIdata(data, byteSize);
+    //uint16_t byteSize = sizeof(data);
+    //sendSPIdata(data, byteSize);
 }
 
 /**
@@ -107,7 +110,7 @@ void ledOff(uint8_t Lednr)
         data[2] &= ~LED_arr[Lednr - 1][2];
     }
 
-    uint16_t byteSize = sizeof(data);
-    sendSPIdata(data, byteSize);
+    //uint16_t byteSize = sizeof(data);
+    //sendSPIdata(data, byteSize);
 }
 

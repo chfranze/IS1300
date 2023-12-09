@@ -22,14 +22,7 @@
 #include "task.h"
 #include "main.h"
 #include "cmsis_os.h"
-
-#include "switch_handlers.h"
 #include "utilities.h"
-#include "traffic_light.h"
-
-#include <string.h>
-#include <stdint.h>
-#include <stdbool.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -37,6 +30,7 @@ void wait_cycles( uint32_t n );
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
+typedef StaticSemaphore_t osStaticMutexDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -54,9 +48,7 @@ void wait_cycles( uint32_t n );
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-uint8_t varBlink1 = 0;
-uint8_t varBlink2 = 0;
-uint8_t varBlink3 = 0;
+
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -86,12 +78,13 @@ const osThreadAttr_t RoadTask2_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for Initialization */
-osThreadId_t InitializationHandle;
-const osThreadAttr_t Initialization_attributes = {
-  .name = "Initialization",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityRealtime,
+/* Definitions for spiMutex */
+osMutexId_t spiMutexHandle;
+osStaticMutexDef_t spiMutexControlBlock;
+const osMutexAttr_t spiMutex_attributes = {
+  .name = "spiMutex",
+  .cb_mem = &spiMutexControlBlock,
+  .cb_size = sizeof(spiMutexControlBlock),
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -103,7 +96,6 @@ void StartDefaultTask(void *argument);
 void SendSPIdataTask(void *argument);
 void RoadCrossingTask1(void *argument);
 void RoadCrossingTask2(void *argument);
-void InitializationTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -116,6 +108,9 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
 
   /* USER CODE END Init */
+  /* Create the mutex(es) */
+  /* creation of spiMutex */
+  spiMutexHandle = osMutexNew(&spiMutex_attributes);
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
@@ -146,9 +141,6 @@ void MX_FREERTOS_Init(void) {
   /* creation of RoadTask2 */
   RoadTask2Handle = osThreadNew(RoadCrossingTask2, NULL, &RoadTask2_attributes);
 
-  /* creation of Initialization */
-  InitializationHandle = osThreadNew(InitializationTask, NULL, &Initialization_attributes);
-
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -177,7 +169,7 @@ void StartDefaultTask(void *argument)
 
   for(;;)
   {
-      vTaskDelay(pdMS_TO_TICKS(100));  // Delay for 1 second
+      //vTaskDelay(pdMS_TO_TICKS(100));  // Delay for 1 second
       // Add more LED-related tasks as needed
   }
   /* USER CODE END StartDefaultTask */
@@ -193,11 +185,21 @@ void StartDefaultTask(void *argument)
 void SendSPIdataTask(void *argument)
 {
   /* USER CODE BEGIN SendSPIdataTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
+	TickType_t xLastWakeTime;
+	const TickType_t xPeriod = pdMS_TO_TICKS(10) ; // ms to ticks
+
+    //sendSPIdata(data, 3);  // Implement this function to send data using SPI
+
+    // Infinite loop for continuous SPI communication
+	xLastWakeTime = xTaskGetTickCount();
+	for (;;) {
+	    if(memcmp(data, lastData, sizeof(data)) != 0)  // Compare the arrays
+	    {
+	        sendSPIdata(data, 3);  // Implement this function to send data using SPI
+	        memcpy(lastData, data, sizeof(data));  // Copy data to lastData
+	    }
+	    vTaskDelayUntil(&xLastWakeTime, xPeriod);
+	}
   /* USER CODE END SendSPIdataTask */
 }
 
@@ -211,72 +213,16 @@ void SendSPIdataTask(void *argument)
 void RoadCrossingTask1(void *argument)
 {
   /* USER CODE BEGIN RoadCrossingTask1 */
-  TickType_t xLastWakeTime;
-  const TickType_t xPeriod = pdMS_TO_TICKS(10); // ms to ticks
-
   /* Infinite loop */
-  xLastWakeTime = xTaskGetTickCount();
-
-  TrafficLightStateMachine();
-
-  /*
+	TickType_t xLastWakeTime;
+	const TickType_t xPeriod = pdMS_TO_TICKS(10) ; // ms to ticks
+	xLastWakeTime = xTaskGetTickCount();
   for(;;)
   {
-    if(isPedestrianCrossingGreen)
-    {
-      ledOff(23);  // Turn off blue light
-      ledOff(19);
-      ledOn(21);   // Turn on green light
-      ledOff(12);
-      ledOff(6);
-      ledOn(10);
-      ledOn(4);
-    }
-
-    if(!isPedestrianCrossingGreen)
-    {
-    	if(varBlink1 == 1)
-    	{
-    	    ledOn(23);
-    		varBlink1 = 0;
-    	}
-    	else
-    	{
-    	    ledOff(23);
-    		varBlink1 = 1;
-    	}
-    }
-
-	vTaskDelayUntil( &xLastWakeTime, xPeriod );
-
-    if(SW78_hit() && !isPedestrianCrossingGreen)
-    {
-      isButtonPressed = true;
-      xTimeSinceLastToggle = 0;
-    }
-
-    if(isButtonPressed)
-    {
-      xTimeSinceLastToggle += xPeriod;
-
-      if(xTimeSinceLastToggle >= pedestrianDelay)
-      {
-        isPedestrianCrossingGreen = true;
-        isButtonPressed = false;
-      }
-    }
-    else if (!SW78_hit() && isPedestrianCrossingGreen)
-    {
-      isPedestrianCrossingGreen = false;
-    }
-
-    vTaskDelayUntil(&xLastWakeTime, xPeriod);
-  }
-  */
+	  TrafficLightStateMachine();
+	  vTaskDelayUntil(&xLastWakeTime, xPeriod);  }
   /* USER CODE END RoadCrossingTask1 */
-
 }
-
 
 /* USER CODE BEGIN Header_RoadCrossingTask2 */
 /**
@@ -294,25 +240,6 @@ void RoadCrossingTask2(void *argument)
     osDelay(1);
   }
   /* USER CODE END RoadCrossingTask2 */
-}
-
-/* USER CODE BEGIN Header_InitializationTask */
-/**
-* @brief Function implementing the Initialization thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_InitializationTask */
-void InitializationTask(void *argument)
-{
-  /* USER CODE BEGIN InitializationTask */
-	#ifdef RUN_TEST_PROGRAM
-    	Test_program();
-    #else
-    	TrafficLightInitialization();
-    #endif
-    vTaskDelete(NULL);
-  /* USER CODE END InitializationTask */
 }
 
 /* Private application code --------------------------------------------------*/
