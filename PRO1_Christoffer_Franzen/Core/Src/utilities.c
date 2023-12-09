@@ -64,7 +64,7 @@ void sendSPIdata(uint8_t data[], uint16_t byteSize)
 }
 
 /**
-@brief lightUpLEDs, uses the sendSPIdata function to send data to a series of LEDs connected to a 74HC595D shift register.
+@brief lightUpLEDs, sends data to a series of LEDs connected to a 74HC595D shift register.
 @param leds[][3] A two-dimensional array where each row corresponds to an LED and each column corresponds to a byte of the LED's data.
 @param num_leds The number of LEDs in the leds array.
 @return void
@@ -75,13 +75,10 @@ void lightUpLEDs(uint8_t leds[][3], size_t num_leds) {
         data[1] |= leds[i][1];
         data[2] |= leds[i][2];
     }
-
-    //uint16_t byteSize = sizeof(data);
-    //sendSPIdata(data, byteSize);
 }
 
 /**
-@brief ledOn, uses the sendSPIdata function to turn on a specific LED connected to shift register.
+@brief ledOn, turns on a specific LED connected to a 74HC595D shift register.
 @param Lednr The number of the LED to be turned on.
 @return void
 */
@@ -92,13 +89,10 @@ void ledOn(uint8_t Lednr)
         data[1] |= LED_arr[Lednr - 1][1];
         data[2] |= LED_arr[Lednr - 1][2];
     }
-
-    //uint16_t byteSize = sizeof(data);
-    //sendSPIdata(data, byteSize);
 }
 
 /**
-@brief ledOff, uses the sendSPIdata function to turn off a specific LED connected to shift register.
+@brief ledOff, turns off a specific LED connected to a 74HC595D shift register.
 @param Lednr The number of the LED to be turned off.
 @return void
 */
@@ -109,8 +103,4 @@ void ledOff(uint8_t Lednr)
         data[1] &= ~LED_arr[Lednr - 1][1];
         data[2] &= ~LED_arr[Lednr - 1][2];
     }
-
-    //uint16_t byteSize = sizeof(data);
-    //sendSPIdata(data, byteSize);
 }
-
