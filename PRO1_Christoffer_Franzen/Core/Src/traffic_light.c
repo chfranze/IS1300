@@ -17,6 +17,7 @@
 #include "utilities.h"
 #include "FreeRTOS.h"
 #include "timers.h"
+#include "switch_handlers.h"
 
 TimerHandle_t pedestrianTimer;
 
@@ -33,16 +34,6 @@ typedef enum {
 	CAR_SIGNAL_TRANSITION,
 	PEDESTRIAN_SIGNAL_CHECK
 } State;
-
-// Function prototypes
-bool isButtonPressed();
-void toggleIndicatorLight();
-void setPedestrianLightRed();
-void setPedestrianLightGreen();
-void setCarSignalGreen();
-void setCarSignalOrange();
-void setCarSignalRed();
-void pedestrianTimerCallback(TimerHandle_t xTimer);
 
 /**
  @brief
@@ -77,16 +68,11 @@ void TrafficLightStateMachine(void) {
 			ledOn(6);
 			ledOn(12);
 
-			HAL_GPIO_WritePin(LED25_GPIO_Port, LED25_Pin, GPIO_PIN_SET);
-
 			if (SW78_hit()) {
 				state = BUTTON_PRESSED;
-				HAL_GPIO_WritePin(LED25_GPIO_Port, LED25_Pin, GPIO_PIN_RESET);
 			}
 			break;
 		case BUTTON_PRESSED:
-			HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_SET);
-
 			// Start timer
 			xLastWakeTime = xTaskGetTickCount(); // Initialise the xLastWakeTime variable with the current time.
 			for (int i = 0; i < pedestrianDelay; i++) {
@@ -102,8 +88,6 @@ void TrafficLightStateMachine(void) {
 
 			ledOff(12);
 			ledOff(6);
-
-			HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_RESET);
 
 			state = CAR_SIGNAL_TRANSITION;
 			break;
@@ -133,8 +117,6 @@ void TrafficLightStateMachine(void) {
 			state = INITIALIZATION;
 			break;
 		case CAR_SIGNAL_TRANSITION:
-			HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_SET);
-
 			ledOn(11);
 			ledOn(5);
 
@@ -153,8 +135,6 @@ void TrafficLightStateMachine(void) {
 			ledOff(11);
 			ledOff(5);
 
-			HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_RESET);
-			//setCarSignalGreen();
 			state = PEDESTRIAN_CROSSING;
 			break;
 		}

@@ -23,6 +23,7 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "utilities.h"
+#include "test.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -38,7 +39,7 @@ typedef StaticSemaphore_t osStaticMutexDef_t;
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define RUN_TEST_PROGRAM
-#undef RUN_TEST_PROGRAM
+//#undef RUN_TEST_PROGRAM
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -169,8 +170,11 @@ void StartDefaultTask(void *argument)
 
   for(;;)
   {
-      //vTaskDelay(pdMS_TO_TICKS(100));  // Delay for 1 second
-      // Add more LED-related tasks as needed
+	#ifdef RUN_TEST_PROGRAM
+	  Test_program();
+	#else
+	  vTaskDelete(NULL);
+	#endif
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -219,8 +223,13 @@ void RoadCrossingTask1(void *argument)
 	xLastWakeTime = xTaskGetTickCount();
   for(;;)
   {
+	#ifdef RUN_TEST_PROGRAM
+	  vTaskDelete(NULL);
+	#else
 	  TrafficLightStateMachine();
-	  vTaskDelayUntil(&xLastWakeTime, xPeriod);  }
+	  vTaskDelayUntil(&xLastWakeTime, xPeriod);
+	#endif
+  }
   /* USER CODE END RoadCrossingTask1 */
 }
 
@@ -237,7 +246,12 @@ void RoadCrossingTask2(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+	#ifdef RUN_TEST_PROGRAM
+	  vTaskDelete(NULL);
+	#else
+	  //TrafficLightStateMachine();
+	  //vTaskDelayUntil(&xLastWakeTime, xPeriod);
+	#endif
   }
   /* USER CODE END RoadCrossingTask2 */
 }

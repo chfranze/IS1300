@@ -27,12 +27,10 @@
 */
 void Test_program(void)
 {
-  //Test_Led();
-  //Test_TraficLights();
-  //lightUpLED1();
-  //lightUpLED();
-	//Test_GPIOInputs();
-    //Test_lightUpLEDs();
+	Test_lightUpLEDs();
+	Test_TraficLights();
+	Test_GPIOLeds();
+	Test_GPIOInputs();
 	Test_LedOn();
 }
 
