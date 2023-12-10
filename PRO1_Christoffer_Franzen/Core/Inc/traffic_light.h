@@ -21,6 +21,8 @@ extern uint8_t pedestrianDelay;  // Delay in ms after the pedestrian pushed the 
 extern uint8_t walkingDelay;     // Time in ms the pedestrian signal stays green
 extern uint8_t orangeDelay;      // Time in ms a car signal remains orange
 
+void toggleLED(int i, int led);
+
 void TrafficLightInitialization(void);
 void TrafficLightStateMachine(void);
 

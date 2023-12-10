@@ -30,9 +30,8 @@ uint8_t orangeDelay = 50;
 typedef enum {
 	INITIALIZATION,
 	BUTTON_PRESSED,
-	PEDESTRIAN_CROSSING,
 	CAR_SIGNAL_TRANSITION,
-	PEDESTRIAN_SIGNAL_CHECK
+	PEDESTRIAN_CROSSING,
 } State;
 
 /**
@@ -55,6 +54,20 @@ void TrafficLightInitialization(void) {
  @param
  @return void
  */
+void toggleLED(int i, int led) {
+	if (i % toggleFreq == 0) {
+		ledOn(led);
+	} else {
+		ledOff(led);
+	}
+}
+
+/**
+ @brief
+ @param
+ @param
+ @return void
+ */
 void TrafficLightStateMachine(void) {
 	TickType_t xLastWakeTime;
 	const TickType_t xFrequency = pdMS_TO_TICKS(100); // Delay for 1 second
@@ -62,7 +75,8 @@ void TrafficLightStateMachine(void) {
 	while (true) {
 		switch (state) {
 		case INITIALIZATION:
-			TrafficLightInitialization();
+			TrafficLightInitialization(); // Set initial state (R1.1)
+
 			ledOn(19);
 			ledOn(20);
 			ledOn(6);
@@ -73,17 +87,10 @@ void TrafficLightStateMachine(void) {
 			}
 			break;
 		case BUTTON_PRESSED:
-			// Start timer
-			xLastWakeTime = xTaskGetTickCount(); // Initialise the xLastWakeTime variable with the current time.
-			for (int i = 0; i < pedestrianDelay; i++) {
-				vTaskDelayUntil(&xLastWakeTime, xFrequency); // Wait for the next cycle.
-
-				// Toggle LED 23
-				if (i % toggleFreq == 0) {
-					ledOn(23);
-				}else{
-					ledOff(23);
-				}
+			xLastWakeTime = xTaskGetTickCount(); //
+			for (int i = 0; i < pedestrianDelay; i++) {	// Cross walk shall be red pedestrianDelay after the pedestrian pushed the button (R1.3)
+				vTaskDelayUntil(&xLastWakeTime, xFrequency);
+				toggleLED(i, 23); // Toggle LED 23 (R1.2)
 			}
 
 			ledOff(12);
@@ -91,19 +98,33 @@ void TrafficLightStateMachine(void) {
 
 			state = CAR_SIGNAL_TRANSITION;
 			break;
+		case CAR_SIGNAL_TRANSITION:
+			ledOn(11);
+			ledOn(5);
+
+			xLastWakeTime = xTaskGetTickCount();
+			for (int i = 0; i < orangeDelay; i++) {	// A car signal transitions from red to orange to green, or from green to orange to red, remaining orange for orangeDelay (R1.6)
+				vTaskDelayUntil(&xLastWakeTime, xFrequency);
+				toggleLED(i, 23); // Toggle LED 23 (R1.2)
+			}
+
+			ledOff(11);
+			ledOff(5);
+
+			state = PEDESTRIAN_CROSSING;
+			break;
 		case PEDESTRIAN_CROSSING:
 			ledOff(12);
 			ledOff(6);
 			ledOff(20);
 
 			ledOn(10);
-			ledOn(4);
-			ledOn(22);
+			ledOn(4);  // The pedestrian signal must be red when the car signal of each active lane that
+			ledOn(22); // crosses the cross walk is either green or orange, and green otherwise (R1.5)
 
-
-			xLastWakeTime = xTaskGetTickCount(); // Initialise the xLastWakeTime variable with the current time.
-			for (int i = 0; i < walkingDelay; i++) {
-				vTaskDelayUntil(&xLastWakeTime, xFrequency); // Wait for the next cycle.
+			xLastWakeTime = xTaskGetTickCount();
+			for (int i = 0; i < walkingDelay; i++) { // The pedestrian signal stays green for walkingDelay (R1.4)
+				vTaskDelayUntil(&xLastWakeTime, xFrequency);
 			}
 
 			ledOn(12);
@@ -115,27 +136,6 @@ void TrafficLightStateMachine(void) {
 			ledOff(22);
 
 			state = INITIALIZATION;
-			break;
-		case CAR_SIGNAL_TRANSITION:
-			ledOn(11);
-			ledOn(5);
-
-			xLastWakeTime = xTaskGetTickCount(); // Initialise the xLastWakeTime variable with the current time.
-			for (int i = 0; i < orangeDelay; i++) {
-				vTaskDelayUntil(&xLastWakeTime, xFrequency); // Wait for the next cycle.
-
-				// Toggle LED 23
-				if (i % toggleFreq == 0) {
-					ledOn(23);
-				}else{
-					ledOff(23);
-				}
-			}
-
-			ledOff(11);
-			ledOff(5);
-
-			state = PEDESTRIAN_CROSSING;
 			break;
 		}
 	}
