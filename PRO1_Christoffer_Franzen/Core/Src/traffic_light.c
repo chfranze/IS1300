@@ -141,3 +141,92 @@ void TrafficLightStateMachine(void) {
 	}
 }
 
+/**
+ @brief
+ @param
+ @param
+ @return void
+ */
+void TrafficLightInitialization2(void) {
+	int InitializeLEDs[] = { 3, 9, 13, 14 };
+
+	for (int i = 0; i < 4; i++) {
+		ledOn(InitializeLEDs[i]);
+	}
+}
+
+/**
+ @brief
+ @param
+ @param
+ @return void
+ */
+void TrafficLightStateMachine2(void) {
+	TickType_t xLastWakeTime;
+	const TickType_t xFrequency = pdMS_TO_TICKS(100); // Delay for 1 second
+	State state = INITIALIZATION;
+	while (true) {
+		switch (state) {
+		case INITIALIZATION:
+			TrafficLightInitialization2(); // Set initial state (R1.1)
+
+			ledOn(3);
+			ledOn(9);
+			ledOn(13);
+			ledOn(14);
+
+			if (SW56_hit()) {
+				state = BUTTON_PRESSED;
+			}
+			break;
+		case BUTTON_PRESSED:
+			xLastWakeTime = xTaskGetTickCount(); //
+			for (int i = 0; i < pedestrianDelay; i++) {	// Cross walk shall be red pedestrianDelay after the pedestrian pushed the button (R1.3)
+				vTaskDelayUntil(&xLastWakeTime, xFrequency);
+				toggleLED(i, 18); // Toggle LED 18 (R1.2)
+			}
+
+			ledOff(3);
+			ledOff(9);
+
+			state = CAR_SIGNAL_TRANSITION;
+			break;
+		case CAR_SIGNAL_TRANSITION:
+			ledOn(2);
+			ledOn(8);
+
+			xLastWakeTime = xTaskGetTickCount();
+			for (int i = 0; i < orangeDelay; i++) {	// A car signal transitions from red to orange to green, or from green to orange to red, remaining orange for orangeDelay (R1.6)
+				vTaskDelayUntil(&xLastWakeTime, xFrequency);
+				toggleLED(i, 18); // Toggle LED 18 (R1.2)
+			}
+
+			ledOff(2);
+			ledOff(8);
+
+			state = PEDESTRIAN_CROSSING;
+			break;
+		case PEDESTRIAN_CROSSING:
+			ledOff(13);
+			ledOff(14);
+
+			ledOn(7);
+			ledOn(1);
+			ledOn(16);  // The pedestrian signal must be red when the car signal of each active lane that
+			ledOn(15); // crosses the cross walk is either green or orange, and green otherwise (R1.5)
+
+			xLastWakeTime = xTaskGetTickCount();
+			for (int i = 0; i < walkingDelay; i++) { // The pedestrian signal stays green for walkingDelay (R1.4)
+				vTaskDelayUntil(&xLastWakeTime, xFrequency);
+			}
+
+			ledOff(16);
+			ledOff(15);
+			ledOff(7);
+			ledOff(1);
+
+			state = INITIALIZATION;
+			break;
+		}
+	}
+}

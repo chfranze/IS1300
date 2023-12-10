@@ -25,5 +25,7 @@ void toggleLED(int i, int led);
 
 void TrafficLightInitialization(void);
 void TrafficLightStateMachine(void);
+void TrafficLightStateMachine2(void);
+void TrafficLightInitialization2(void);
 
 #endif /* INC_TRAFFIC_LIGHT_H_ */

@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * File Name          : freertos.c
-  * Description        : Code for freertos applications
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2023 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * File Name          : freertos.c
+ * Description        : Code for freertos applications
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2023 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
@@ -22,12 +22,13 @@
 #include "task.h"
 #include "main.h"
 #include "cmsis_os.h"
-#include "utilities.h"
-#include "test.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-void wait_cycles( uint32_t n );
+#include <string.h>
+#include "test.h"
+#include "utilities.h"
+#include "traffic_light.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -63,7 +64,7 @@ osThreadId_t SendSPITaskHandle;
 const osThreadAttr_t SendSPITask_attributes = {
   .name = "SendSPITask",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
+  .priority = (osPriority_t) osPriorityHigh,
 };
 /* Definitions for RoadTask1 */
 osThreadId_t RoadTask1Handle;
@@ -90,7 +91,7 @@ const osMutexAttr_t spiMutex_attributes = {
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-
+void wait_cycles(uint32_t n);
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
@@ -114,19 +115,19 @@ void MX_FREERTOS_Init(void) {
   spiMutexHandle = osMutexNew(&spiMutex_attributes);
 
   /* USER CODE BEGIN RTOS_MUTEX */
-  /* add mutexes, ... */
+	/* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
-  /* add semaphores, ... */
+	/* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
-  /* start timers, add new ones, ... */
+	/* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
-  /* add queues, ... */
+	/* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -143,123 +144,124 @@ void MX_FREERTOS_Init(void) {
   RoadTask2Handle = osThreadNew(RoadCrossingTask2, NULL, &RoadTask2_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
+	/* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
-  /* add events, ... */
+	/* add events, ... */
   /* USER CODE END RTOS_EVENTS */
 
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */
 /**
-  * @brief  Function implementing the defaultTask thread.
-  * @param  argument: Not used
-  * @retval None
-  */
+ * @brief  Function implementing the defaultTask thread.
+ * @param  argument: Not used
+ * @retval None
+ */
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
 	TickType_t xLastWakeTime;
-	const TickType_t xPeriod = pdMS_TO_TICKS(10) ; // ms to ticks
+	const TickType_t xPeriod = pdMS_TO_TICKS(10); // ms to ticks
 
-  /* Infinite loop */
+	/* Infinite loop */
 	xLastWakeTime = xTaskGetTickCount();
 
-  for(;;)
-  {
-	#ifdef RUN_TEST_PROGRAM
+	for (;;) {
+#ifdef RUN_TEST_PROGRAM
 	  Test_program();
 	#else
-	  vTaskDelete(NULL);
-	#endif
-  }
+		vTaskDelete(NULL);
+#endif
+	}
   /* USER CODE END StartDefaultTask */
 }
 
 /* USER CODE BEGIN Header_SendSPIdataTask */
 /**
-* @brief Function implementing the SendSPITask thread.
-* @param argument: Not used
-* @retval None
-*/
+ * @brief Function implementing the SendSPITask thread.
+ * @param argument: Not used
+ * @retval None
+ */
 /* USER CODE END Header_SendSPIdataTask */
 void SendSPIdataTask(void *argument)
 {
   /* USER CODE BEGIN SendSPIdataTask */
-	TickType_t xLastWakeTime;
-	const TickType_t xPeriod = pdMS_TO_TICKS(10) ; // ms to ticks
-
-    //sendSPIdata(data, 3);  // Implement this function to send data using SPI
+    TickType_t xLastWakeTime;
+    const TickType_t xPeriod = pdMS_TO_TICKS(50); // ms to ticks
 
     // Infinite loop for continuous SPI communication
-	xLastWakeTime = xTaskGetTickCount();
-	for (;;) {
-	    if(memcmp(data, lastData, sizeof(data)) != 0)  // Compare the arrays
-	    {
-	        sendSPIdata(data, 3);  // Implement this function to send data using SPI
-	        memcpy(lastData, data, sizeof(data));  // Copy data to lastData
-	    }
-	    vTaskDelayUntil(&xLastWakeTime, xPeriod);
-	}
+    xLastWakeTime = xTaskGetTickCount();
+    for (;;) {
+        if (osMutexAcquire(spiMutexHandle, osWaitForever) == osOK) {
+            if (memcmp(data, lastData, sizeof(data)) != 0) // Compare the arrays
+            {
+                sendSPIdata(data, 3);                 // Implement this function to send data using SPI
+                memcpy(lastData, data, sizeof(data)); // Copy data to lastData
+            }
+            osMutexRelease(spiMutexHandle);
+        }
+        vTaskDelayUntil(&xLastWakeTime, xPeriod);
+    }
   /* USER CODE END SendSPIdataTask */
 }
 
 /* USER CODE BEGIN Header_RoadCrossingTask1 */
 /**
-* @brief Function implementing the RoadTask1 thread.
-* @param argument: Not used
-* @retval None
-*/
+ * @brief Function implementing the RoadTask1 thread.
+ * @param argument: Not used
+ * @retval None
+ */
 /* USER CODE END Header_RoadCrossingTask1 */
 void RoadCrossingTask1(void *argument)
 {
   /* USER CODE BEGIN RoadCrossingTask1 */
-  /* Infinite loop */
+	/* Infinite loop */
 	TickType_t xLastWakeTime;
-	const TickType_t xPeriod = pdMS_TO_TICKS(10) ; // ms to ticks
+	const TickType_t xPeriod = pdMS_TO_TICKS(10); // ms to ticks
 	xLastWakeTime = xTaskGetTickCount();
-  for(;;)
-  {
-	#ifdef RUN_TEST_PROGRAM
+	for (;;) {
+#ifdef RUN_TEST_PROGRAM
 	  vTaskDelete(NULL);
 	#else
-	  TrafficLightStateMachine();
-	  vTaskDelayUntil(&xLastWakeTime, xPeriod);
-	#endif
-  }
+		TrafficLightStateMachine();
+		vTaskDelayUntil(&xLastWakeTime, xPeriod);
+#endif
+	}
   /* USER CODE END RoadCrossingTask1 */
 }
 
 /* USER CODE BEGIN Header_RoadCrossingTask2 */
 /**
-* @brief Function implementing the RoadTask2 thread.
-* @param argument: Not used
-* @retval None
-*/
+ * @brief Function implementing the RoadTask2 thread.
+ * @param argument: Not used
+ * @retval None
+ */
 /* USER CODE END Header_RoadCrossingTask2 */
 void RoadCrossingTask2(void *argument)
 {
   /* USER CODE BEGIN RoadCrossingTask2 */
-  /* Infinite loop */
-  for(;;)
-  {
-	#ifdef RUN_TEST_PROGRAM
-	  vTaskDelete(NULL);
-	#else
-	  //TrafficLightStateMachine();
-	  //vTaskDelayUntil(&xLastWakeTime, xPeriod);
-	#endif
-  }
+	/* Infinite loop */
+	TickType_t xLastWakeTime;
+	const TickType_t xPeriod = pdMS_TO_TICKS(10); // ms to ticks
+	xLastWakeTime = xTaskGetTickCount();
+	for (;;) {
+#ifdef RUN_TEST_PROGRAM
+		  vTaskDelete(NULL);
+		#else
+		TrafficLightStateMachine2();
+		vTaskDelayUntil(&xLastWakeTime, xPeriod);
+#endif
+	}
   /* USER CODE END RoadCrossingTask2 */
 }
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-void wait_cycles( uint32_t n ) {
-	uint32_t l = n/3; //cycles per loop is 3
+void wait_cycles(uint32_t n) {
+	uint32_t l = n / 3; //cycles per loop is 3
 	asm volatile( "0:" "SUBS %[count], 1;" "BNE 0b;" :[count]"+r"(l) );
 }
 /* USER CODE END Application */
