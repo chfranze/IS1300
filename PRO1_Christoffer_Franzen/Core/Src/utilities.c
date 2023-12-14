@@ -94,3 +94,13 @@ void ledOff(uint8_t Lednr) {
 		data[2] &= ~LED_arr[Lednr - 1][2];
 	}
 }
+
+/**
+ @brief turnOffAllLEDs, turns off all LEDs connected to a 74HC595D shift register.
+ @return void
+ */
+void turnOffAllLEDs() {
+    for (uint8_t i = 1; i <= 24; i++) {
+        ledOff(i);
+    }
+}

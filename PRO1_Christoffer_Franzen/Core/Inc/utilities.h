@@ -51,5 +51,6 @@ void sendSPIdata(uint8_t data[], uint16_t byteSize);
 void lightUpLEDs(uint8_t leds[][3], size_t num_leds);
 void ledOn(uint8_t Lednr);
 void ledOff(uint8_t Lednr);
+void turnOffAllLEDs();
 
 #endif /* INC_UTILITIES_H_ */

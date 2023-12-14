@@ -222,10 +222,14 @@ void RoadCrossingTask1(void *argument)
 	TickType_t xLastWakeTime;
 	const TickType_t xPeriod = pdMS_TO_TICKS(10); // ms to ticks
 	xLastWakeTime = xTaskGetTickCount();
+    TrafficLight tl;
+    initialize(&tl);
 	for (;;) {
 #ifdef RUN_TEST_PROGRAM
 	  vTaskDelete(NULL);
 	#else
+	  //initialize(&tl);
+      //update(&tl);
 		TrafficLightStateMachine();
 		vTaskDelayUntil(&xLastWakeTime, xPeriod);
 #endif
@@ -251,7 +255,7 @@ void RoadCrossingTask2(void *argument)
 #ifdef RUN_TEST_PROGRAM
 		  vTaskDelete(NULL);
 		#else
-		TrafficLightStateMachine2();
+		//TrafficLightStateMachine2();
 		vTaskDelayUntil(&xLastWakeTime, xPeriod);
 #endif
 	}

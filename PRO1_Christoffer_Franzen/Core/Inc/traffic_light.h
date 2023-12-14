@@ -28,4 +28,19 @@ void TrafficLightStateMachine(void);
 void TrafficLightStateMachine2(void);
 void TrafficLightInitialization2(void);
 
+typedef enum {
+    RED,
+    ORANGE,
+    GREEN
+} TrafficLightState;
+
+typedef struct {
+    TrafficLightState car;
+    TrafficLightState pedestrian;
+    bool button_pressed;
+} TrafficLight;
+
+void update(TrafficLight *tl);
+void initialize(TrafficLight *tl);
+
 #endif /* INC_TRAFFIC_LIGHT_H_ */
