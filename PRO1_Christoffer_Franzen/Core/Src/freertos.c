@@ -50,6 +50,8 @@ typedef StaticSemaphore_t osStaticMutexDef_t;
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
+TrafficLight tl1;
+TrafficLight tl2;
 
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
@@ -222,15 +224,13 @@ void RoadCrossingTask1(void *argument)
 	TickType_t xLastWakeTime;
 	const TickType_t xPeriod = pdMS_TO_TICKS(10); // ms to ticks
 	xLastWakeTime = xTaskGetTickCount();
-    TrafficLight tl;
-    initialize(&tl);
+    initialize(&tl1);
 	for (;;) {
 #ifdef RUN_TEST_PROGRAM
 	  vTaskDelete(NULL);
 	#else
-	  //initialize(&tl);
-      //update(&tl);
-		TrafficLightStateMachine();
+		TrafficLightStateMachine(&tl1);
+		updateInputs(&tl1);
 		vTaskDelayUntil(&xLastWakeTime, xPeriod);
 #endif
 	}

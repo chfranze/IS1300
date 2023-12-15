@@ -21,13 +21,6 @@ extern uint8_t pedestrianDelay;  // Delay in ms after the pedestrian pushed the 
 extern uint8_t walkingDelay;     // Time in ms the pedestrian signal stays green
 extern uint8_t orangeDelay;      // Time in ms a car signal remains orange
 
-void toggleLED(int i, int led);
-
-void TrafficLightInitialization(void);
-void TrafficLightStateMachine(void);
-void TrafficLightStateMachine2(void);
-void TrafficLightInitialization2(void);
-
 typedef enum {
     RED,
     ORANGE,
@@ -35,12 +28,21 @@ typedef enum {
 } TrafficLightState;
 
 typedef struct {
-    TrafficLightState car;
-    TrafficLightState pedestrian;
-    bool button_pressed;
+    TrafficLightState north;
+    TrafficLightState south;
+    TrafficLightState east;
+    TrafficLightState west;
+    TrafficLightState pedestrianNS; // Pedestrian crossing for North-South
+    TrafficLightState pedestrianEW; // Pedestrian crossing for East-West
+    bool button_pressed_NS;
+    bool button_pressed_EW;
+    bool car_present[4]; // Array to hold car presence for each direction
 } TrafficLight;
 
-void update(TrafficLight *tl);
-void initialize(TrafficLight *tl);
 
+void TrafficLightStateMachine(TrafficLight *tl);
+void initialize(TrafficLight *tl);
+void updateLEDs(TrafficLight *tl);
+void updateInputs(TrafficLight *tl);
+void toggleLED(int i, int led);
 #endif /* INC_TRAFFIC_LIGHT_H_ */
