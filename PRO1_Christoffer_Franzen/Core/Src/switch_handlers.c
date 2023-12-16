@@ -61,3 +61,24 @@ bool SW56_hit(void){ return readSwitch(SW56_GPIO_Port, SW56_Pin); }
 @return bool Returns true if either SW7 or SW8 is pressed, false otherwise.
 */
 bool SW78_hit(void){ return readSwitch(SW78_GPIO_Port, SW78_Pin); }
+
+/**
+ * @brief Checks if a switch is active.
+ * @param GPIOx The GPIO port of the switch.
+ * @param GPIO_Pin The GPIO pin of the switch.
+ * @return Returns true if the switch is active (GPIO_PIN_SET), false otherwise.
+ */
+bool isSwitchActive(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin) {
+    return HAL_GPIO_ReadPin(GPIOx, GPIO_Pin) == GPIO_PIN_SET;
+}
+
+/**
+ * @brief Checks if a switch is deactive.
+ * @param GPIOx The GPIO port of the switch.
+ * @param GPIO_Pin The GPIO pin of the switch.
+ * @return Returns true if the switch is deactive (GPIO_PIN_RESET), false otherwise.
+ */
+bool isSwitchDeactive(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin) {
+    return HAL_GPIO_ReadPin(GPIOx, GPIO_Pin) == GPIO_PIN_RESET;
+}
+

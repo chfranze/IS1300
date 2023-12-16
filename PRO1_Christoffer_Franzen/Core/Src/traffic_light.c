@@ -18,32 +18,26 @@
 #include "FreeRTOS.h"
 #include "timers.h"
 #include "switch_handlers.h"
+#include "traffic_light.h"
 
 uint8_t toggleFreq = 5;
 uint8_t pedestrianDelay = 100;
 uint8_t walkingDelay = 100;
 uint8_t orangeDelay = 50;
 //uint8_t greenDelay = 5000;
-uint8_t redDelayMax = 100;
+//uint8_t redDelayMax = 100;
+//const TickType_t toggleFreq = pdMS_TO_TICKS(500);
+//const TickType_t pedestrianDelay = pdMS_TO_TICKS(5000);
+//const TickType_t walkingDelay = pdMS_TO_TICKS(10000);
+//const TickType_t orangeDelay = pdMS_TO_TICKS(2500);
+const TickType_t greenDelay = pdMS_TO_TICKS(5000);
+const TickType_t redDelayMax = pdMS_TO_TICKS(5000);
 
-typedef enum {
-    RED,
-    ORANGE,
-    GREEN
-} TrafficLightState;
-
-typedef struct {
-    TrafficLightState north;
-    TrafficLightState south;
-    TrafficLightState east;
-    TrafficLightState west;
-    TrafficLightState pedestrianNS; // Pedestrian crossing for North-South
-    TrafficLightState pedestrianEW; // Pedestrian crossing for East-West
-    bool button_pressed_NS;
-    bool button_pressed_EW;
-    bool car_present[4]; // Array to hold car presence for each direction
-} TrafficLight;
-
+/**
+ * @brief Initializes a TrafficLight object.
+ * @param tl A pointer to the TrafficLight object to be initialized.
+ * @return void
+ */
 void initialize(TrafficLight *tl) {
     tl->north = RED;
     tl->south = RED;
@@ -56,8 +50,14 @@ void initialize(TrafficLight *tl) {
     for (int i = 0; i < 4; i++) {
         tl->car_present[i] = false;
     }
+    updateLEDs(tl);
 }
 
+/**
+ @brief
+ @param
+ @return void
+ */
 void toggleLED(int i, int led) {
 	if (i % toggleFreq == 0) {
 		ledOn(led);
@@ -66,11 +66,16 @@ void toggleLED(int i, int led) {
 	}
 }
 
+/**
+ @brief
+ @param
+ @return void
+ */
 void TrafficLightStateMachine(TrafficLight *tl) {
     TickType_t xLastWakeTime;
     const TickType_t xFrequency = pdMS_TO_TICKS(100); // Delay for 1 second
     static TickType_t lastChangeTime = 0;
-	TickType_t greenDelay = pdMS_TO_TICKS(5000); // Set your greenDelay here
+    static TickType_t lastChangeTime2 = 0;
 
 	if ((xTaskGetTickCount() - lastChangeTime) >= greenDelay) {
 		bool all_false = true;
@@ -194,22 +199,84 @@ void TrafficLightStateMachine(TrafficLight *tl) {
     else
     {
 
-        // No pedestrian
+    	// No pedestrian
 
-        // Keep the car light GREEN for the direction with cars and the pedestrian light RED
-        for (int i = 0; i < 4; i++) {
-            if (tl->car_present[i]) {
-                // Car is present in this direction
-                // Set the corresponding direction to GREEN and others to RED
-                // Set the corresponding pedestrian light to RED
-            }
-        }
+    	// R2.7
+    	if(tl->north == RED && tl->south == RED &&  tl->pedestrianNS == RED &&  tl->pedestrianEW == RED){
+			if (isSwitchActive(SW2_GPIO_Port, SW2_Pin) || isSwitchActive(SW4_GPIO_Port, SW4_Pin)) {
+				if(isSwitchDeactive(SW1_GPIO_Port, SW1_Pin) && isSwitchDeactive(SW3_GPIO_Port, SW3_Pin)){
+					tl->east = RED;
+					tl->west = RED;
+					tl->north = GREEN;
+					tl->south = GREEN;
+		            updateLEDs(tl);
+				}
+				else if((xTaskGetTickCount() - lastChangeTime2) >= redDelayMax){
+					tl->east = ORANGE;
+					tl->west = ORANGE;
+		            updateLEDs(tl);
 
-        // Update the LEDs
-        updateLEDs(tl);
+					xLastWakeTime = xTaskGetTickCount(); //
+					for (int i = 0; i < orangeDelay; i++) {	// Cross walk shall be red pedestrianDelay after the pedestrian pushed the button (R1.3)
+						vTaskDelayUntil(&xLastWakeTime, xFrequency);
+					}
+
+					tl->east = RED;
+					tl->west = RED;
+					tl->north = GREEN;
+					tl->south = GREEN;
+		            updateLEDs(tl);
+
+		            lastChangeTime2 = xTaskGetTickCount();
+					//xLastWakeTime = xTaskGetTickCount(); //
+					//for (int i = 0; i < redDelayMax; i++) {	// Cross walk shall be red pedestrianDelay after the pedestrian pushed the button (R1.3)
+					//	vTaskDelayUntil(&xLastWakeTime, xFrequency);
+					//}
+				}
+			}
+    	}
+
+    	// R2.7
+    	if(tl->east == RED && tl->west == RED &&  tl->pedestrianNS == RED &&  tl->pedestrianEW == RED){
+			if (isSwitchActive(SW1_GPIO_Port, SW1_Pin) || isSwitchActive(SW3_GPIO_Port, SW3_Pin)) {
+				if(isSwitchDeactive(SW2_GPIO_Port, SW2_Pin) && isSwitchDeactive(SW4_GPIO_Port, SW4_Pin)){
+					tl->north = RED;
+					tl->south = RED;
+					tl->east = GREEN;
+					tl->west = GREEN;
+		            updateLEDs(tl);
+				}else if((xTaskGetTickCount() - lastChangeTime2) >= redDelayMax){
+					tl->north = ORANGE;
+					tl->south = ORANGE;
+		            updateLEDs(tl);
+
+					xLastWakeTime = xTaskGetTickCount(); //
+					for (int i = 0; i < orangeDelay; i++) {	// Cross walk shall be red pedestrianDelay after the pedestrian pushed the button (R1.3)
+						vTaskDelayUntil(&xLastWakeTime, xFrequency);
+					}
+
+					tl->north = RED;
+					tl->south = RED;
+					tl->east = GREEN;
+					tl->west = GREEN;
+		            updateLEDs(tl);
+
+		            lastChangeTime2 = xTaskGetTickCount();
+					//xLastWakeTime = xTaskGetTickCount(); //
+					//for (int i = 0; i < redDelayMax; i++) {	// Cross walk shall be red pedestrianDelay after the pedestrian pushed the button (R1.3)
+					//	vTaskDelayUntil(&xLastWakeTime, xFrequency);
+					//}
+				}
+			}
+    	}
     }
 }
 
+/**
+ @brief
+ @param
+ @return void
+ */
 void updateLEDs(TrafficLight *tl) {
     // Turn off all LEDs
     turnOffAllLEDs();
@@ -299,6 +366,11 @@ void updateLEDs(TrafficLight *tl) {
     }
 }
 
+/**
+ @brief
+ @param
+ @return void
+ */
 void updateInputs(TrafficLight *tl){
 	if(SW78_hit()){
 		tl->button_pressed_NS = true;

@@ -50,8 +50,7 @@ typedef StaticSemaphore_t osStaticMutexDef_t;
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-TrafficLight tl1;
-TrafficLight tl2;
+TrafficLight tl;
 
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
@@ -68,17 +67,10 @@ const osThreadAttr_t SendSPITask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityHigh,
 };
-/* Definitions for RoadTask1 */
-osThreadId_t RoadTask1Handle;
-const osThreadAttr_t RoadTask1_attributes = {
-  .name = "RoadTask1",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
-/* Definitions for RoadTask2 */
-osThreadId_t RoadTask2Handle;
-const osThreadAttr_t RoadTask2_attributes = {
-  .name = "RoadTask2",
+/* Definitions for TrafficLight */
+osThreadId_t TrafficLightHandle;
+const osThreadAttr_t TrafficLight_attributes = {
+  .name = "TrafficLight",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
@@ -98,8 +90,7 @@ void wait_cycles(uint32_t n);
 
 void StartDefaultTask(void *argument);
 void SendSPIdataTask(void *argument);
-void RoadCrossingTask1(void *argument);
-void RoadCrossingTask2(void *argument);
+void TrafficLightTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -139,11 +130,8 @@ void MX_FREERTOS_Init(void) {
   /* creation of SendSPITask */
   SendSPITaskHandle = osThreadNew(SendSPIdataTask, NULL, &SendSPITask_attributes);
 
-  /* creation of RoadTask1 */
-  RoadTask1Handle = osThreadNew(RoadCrossingTask1, NULL, &RoadTask1_attributes);
-
-  /* creation of RoadTask2 */
-  RoadTask2Handle = osThreadNew(RoadCrossingTask2, NULL, &RoadTask2_attributes);
+  /* creation of TrafficLight */
+  TrafficLightHandle = osThreadNew(TrafficLightTask, NULL, &TrafficLight_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
@@ -174,6 +162,7 @@ void StartDefaultTask(void *argument)
 	for (;;) {
 #ifdef RUN_TEST_PROGRAM
 	  Test_program();
+	  vTaskDelayUntil(&xLastWakeTime, xPeriod);
 	#else
 		vTaskDelete(NULL);
 #endif
@@ -210,56 +199,31 @@ void SendSPIdataTask(void *argument)
   /* USER CODE END SendSPIdataTask */
 }
 
-/* USER CODE BEGIN Header_RoadCrossingTask1 */
+/* USER CODE BEGIN Header_TrafficLightTask */
 /**
- * @brief Function implementing the RoadTask1 thread.
- * @param argument: Not used
- * @retval None
- */
-/* USER CODE END Header_RoadCrossingTask1 */
-void RoadCrossingTask1(void *argument)
+* @brief Function implementing the TrafficLight thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_TrafficLightTask */
+void TrafficLightTask(void *argument)
 {
-  /* USER CODE BEGIN RoadCrossingTask1 */
-	/* Infinite loop */
+  /* USER CODE BEGIN TrafficLightTask */
 	TickType_t xLastWakeTime;
 	const TickType_t xPeriod = pdMS_TO_TICKS(10); // ms to ticks
 	xLastWakeTime = xTaskGetTickCount();
-    initialize(&tl1);
+    initialize(&tl);
+  /* Infinite loop */
 	for (;;) {
 #ifdef RUN_TEST_PROGRAM
 	  vTaskDelete(NULL);
 	#else
-		TrafficLightStateMachine(&tl1);
-		updateInputs(&tl1);
+		TrafficLightStateMachine(&tl);
+		updateInputs(&tl);
 		vTaskDelayUntil(&xLastWakeTime, xPeriod);
 #endif
 	}
-  /* USER CODE END RoadCrossingTask1 */
-}
-
-/* USER CODE BEGIN Header_RoadCrossingTask2 */
-/**
- * @brief Function implementing the RoadTask2 thread.
- * @param argument: Not used
- * @retval None
- */
-/* USER CODE END Header_RoadCrossingTask2 */
-void RoadCrossingTask2(void *argument)
-{
-  /* USER CODE BEGIN RoadCrossingTask2 */
-	/* Infinite loop */
-	TickType_t xLastWakeTime;
-	const TickType_t xPeriod = pdMS_TO_TICKS(10); // ms to ticks
-	xLastWakeTime = xTaskGetTickCount();
-	for (;;) {
-#ifdef RUN_TEST_PROGRAM
-		  vTaskDelete(NULL);
-		#else
-		//TrafficLightStateMachine2();
-		vTaskDelayUntil(&xLastWakeTime, xPeriod);
-#endif
-	}
-  /* USER CODE END RoadCrossingTask2 */
+  /* USER CODE END TrafficLightTask */
 }
 
 /* Private application code --------------------------------------------------*/

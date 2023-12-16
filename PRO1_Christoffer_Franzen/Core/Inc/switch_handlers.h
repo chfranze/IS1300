@@ -23,5 +23,7 @@ bool SW3_switch(void);
 bool SW4_switch(void);
 bool SW56_hit(void);
 bool SW78_hit(void);
+bool isSwitchActive(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
+bool isSwitchDeactive(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 
 #endif /* INC_SWITCH_HANDLERS_H_ */
