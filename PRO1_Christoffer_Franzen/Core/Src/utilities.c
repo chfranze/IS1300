@@ -21,13 +21,14 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "traffic_light.h"
+#include "global.h"
 
 uint8_t data[3] = { 0x00, 0x00, 0x00 };
 uint8_t lastData[3] = { 0x00, 0x00, 0x00 };
 uint8_t LED_arr[24][3] = { { LED1 }, { LED2 }, { LED3 }, { LED4 }, { LED5 }, {
-		LED6 }, { LED7 }, { LED8 }, { LED9 }, { LED10 }, { LED11 }, { LED12 }, {
-		LED13 }, { LED14 }, { LED15 }, { LED16 }, { LED17 }, { LED18 },
-		{ LED19 }, { LED20 }, { LED21 }, { LED22 }, { LED23 }, { LED24 } };
+LED6 }, { LED7 }, { LED8 }, { LED9 }, { LED10 }, { LED11 }, { LED12 }, {
+LED13 }, { LED14 }, { LED15 }, { LED16 }, { LED17 }, { LED18 }, { LED19 }, {
+		LED20 }, { LED21 }, { LED22 }, { LED23 }, { LED24 } };
 
 /**
  @brief sendSPIdata, uses the SPI3 bus to send data to a 74HC595D shift register, which is used to control traffic lights.
@@ -107,15 +108,21 @@ void turnOffAllLEDs() {
 }
 
 /**
- @brief
- @param
- @return void
+ * @brief Updates the LEDs based on the current state of the traffic light.
+ *
+ * This function turns off all LEDs and then updates the car and pedestrian LEDs
+ * based on the state of the provided TrafficLight structure.
+ *
+ * @param tl A pointer to the TrafficLight structure representing the current
+ * state of the traffic light system.
+ *
+ * @return void
  */
 void updateLEDs(TrafficLight *tl) {
-	// Turn off all LEDs
 	turnOffAllLEDs();
 
 	// Update the car LEDs
+
 	switch (tl->north) {
 	case RED:
 		ledOn(10);
@@ -173,6 +180,7 @@ void updateLEDs(TrafficLight *tl) {
 	}
 
 	// Update the pedestrian LEDs
+
 	switch (tl->pedestrianNS) {
 	case RED:
 		ledOn(20);
@@ -201,11 +209,16 @@ void updateLEDs(TrafficLight *tl) {
 }
 
 /**
- @brief
- @param
- @return void
+ * @brief Toggles the state of a specific LED.
+ *
+ * This function toggles the state of the LED specified by the parameter `Lednr`.
+ * The LED state is tracked internally using a static variable.
+ *
+ * @param Lednr The number of the LED to toggle.
+ *
+ * @return void
  */
-void toggleLED2(uint8_t Lednr) {
+void toggleLED(uint8_t Lednr) {
 	static uint8_t ledState = 0; // LED state: 0 means off, 1 means on
 
 	// Toggle the LED state

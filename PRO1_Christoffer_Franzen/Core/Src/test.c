@@ -20,6 +20,7 @@
 #include "spi.h"
 #include "switch_handlers.h"
 #include "traffic_light.h"
+#include "global.h"
 
 /**
  @brief Test_program, main method for the test code
@@ -32,6 +33,7 @@ void test_program(void) {
 	test_GPIOLeds();
 	test_GPIOInputs();
 	test_ledOn();
+	test_trafficLightStateMachine();
 }
 
 /**
@@ -79,9 +81,9 @@ void test_traficLights(void) {
 	uint8_t no_leds_to_light[1][3] = { { NO_LEDs } };
 
 	for (int i = 0; i < 3; i++) {
-		sendSPIdata(all_leds_to_light, 3);
+		sendSPIdata(all_leds_to_light[0], 3);
 		HAL_Delay(500);
-		sendSPIdata(no_leds_to_light, 3);
+		sendSPIdata(no_leds_to_light[0], 3);
 		HAL_Delay(500);
 	}
 }
@@ -147,6 +149,7 @@ void test_GPIOInputs(void) {
 
 		if (SW56_hit() && SW78_hit()) {
 			HAL_GPIO_WritePin(LED25_GPIO_Port, LED25_Pin, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_RESET);
 			break;
 		}
 	}
@@ -178,6 +181,31 @@ void test_ledOn(void) {
  @return void
  */
 void test_trafficLightStateMachine() {
-	// TODO: Implement
+	TrafficLight tl;
+	initialize(&tl);
+	vTaskDelay(5000);
+
+	HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_SET);
+	while(true){
+		if (SW56_hit() && SW78_hit()) {
+			HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_RESET);
+			break;
+		}
+	}
+
+	tl.east = tl.west = RED;
+	tl.north = tl.south = GREEN;
+	tl.pedestrianNS = RED;
+	tl.pedestrianEW = GREEN;
+	updateLEDs(&tl);
+	vTaskDelay(5000);
+
+	HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_SET);
+	while(true){
+		if (SW56_hit() && SW78_hit()) {
+			HAL_GPIO_WritePin(LED26_GPIO_Port, LED26_Pin, GPIO_PIN_RESET);
+			break;
+		}
+	}
 }
 

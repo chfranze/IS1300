@@ -18,5 +18,6 @@ void test_traficLights(void);
 void test_GPIOLeds(void);
 void test_GPIOInputs(void);
 void test_ledOn(void);
+void test_trafficLightStateMachine(void);
 
 #endif /* INC_TEST_H_ */

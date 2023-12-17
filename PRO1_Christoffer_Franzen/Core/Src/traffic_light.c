@@ -21,7 +21,7 @@
 #include "traffic_light.h"
 #include "global.h"
 
-const TickType_t pedestrianDelay = pdMS_TO_TICKS(8000);
+const TickType_t pedestrianDelay = pdMS_TO_TICKS(8000);	// Not allowed to be less than orangeDelay
 const TickType_t toggleFreq = pdMS_TO_TICKS(250);
 const TickType_t orangeDelay = pdMS_TO_TICKS(5000);
 const TickType_t walkingDelay = pdMS_TO_TICKS(10000);
@@ -34,6 +34,7 @@ const TickType_t redDelayMax = pdMS_TO_TICKS(5000);
  * @return void
  */
 void initialize(TrafficLight *tl) {
+	/* CODE FOR R1.1 & R2.8 BEGIN */
 	tl->north = RED;
 	tl->south = RED;
 	tl->east = GREEN;
@@ -42,6 +43,8 @@ void initialize(TrafficLight *tl) {
 	tl->pedestrianEW = RED;
 	tl->button_pressed_NS = false;
 	tl->button_pressed_EW = false;
+	/* CODE FOR R1.1 & R2.8 END */
+
 	for (int i = 0; i < 4; i++) {
 		tl->car_present[i] = false;
 	}
@@ -49,9 +52,17 @@ void initialize(TrafficLight *tl) {
 }
 
 /**
- @brief
- @param
- @return void
+ * @brief Implements the state machine for controlling the traffic light.
+ *
+ * This function manages the state transitions of the traffic light based on
+ * predefined timing, pedestrian button presses, and car sensor inputs. It
+ * updates the state of the traffic light system stored in the provided
+ * TrafficLight structure.
+ *
+ * @param tl A pointer to the TrafficLight structure representing the current
+ * state of the traffic light system.
+ *
+ * @return void
  */
 void trafficLightStateMachine(TrafficLight *tl) {
 	static TickType_t lastChangeTime = 0;
@@ -59,6 +70,7 @@ void trafficLightStateMachine(TrafficLight *tl) {
 	static TickType_t lastChangeTime3 = 0;
 	static TickType_t lastChangeTime4 = 0;
 
+	/* CODE FOR R2.4 BEGIN */
 	if ((xTaskGetTickCount() - lastChangeTime) >= greenDelay) {
 		bool all_false = true;
 		for (int i = 0; i < 4; i++) {
@@ -87,6 +99,7 @@ void trafficLightStateMachine(TrafficLight *tl) {
 		}
 		lastChangeTime = xTaskGetTickCount();
 	}
+	/* CODE FOR R2.4 END */
 
 	if (tl->button_pressed_NS) {
 		// Pedestrian button for North-South has been pressed
@@ -227,7 +240,7 @@ void trafficLightStateMachine(TrafficLight *tl) {
 			}
 		}
 
-		// R2.7
+		/* CODE FOR R2.7 BEGIN */
 		if (tl->east == RED && tl->west == RED && tl->pedestrianNS == RED
 				&& tl->pedestrianEW == RED) {
 			if (isSwitchActive(SW1_GPIO_Port, SW1_Pin)
@@ -259,6 +272,7 @@ void trafficLightStateMachine(TrafficLight *tl) {
 				}
 			}
 		}
+		/* CODE FOR R2.7 END */
 	}
 }
 

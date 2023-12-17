@@ -46,18 +46,12 @@
 #define ALL_LEDs 0xff, 0xff, 0xff
 #define NO_LEDs 0x00, 0x00, 0x00
 
-#define Initialize_LEDs 0x00, 0x08, 0x0C
-
-extern uint8_t data[3];
-extern uint8_t lastData[3];
-extern uint8_t LED_arr[24][3];
-
 void sendSPIdata(uint8_t data[], uint16_t byteSize);
 void lightUpLEDs(uint8_t leds[][3], size_t num_leds);
 void ledOn(uint8_t Lednr);
 void ledOff(uint8_t Lednr);
 void turnOffAllLEDs();
 void updateLEDs(TrafficLight *tl);
-void toggleLED2(uint8_t Lednr);
+void toggleLED(uint8_t Lednr);
 
 #endif /* INC_UTILITIES_H_ */
