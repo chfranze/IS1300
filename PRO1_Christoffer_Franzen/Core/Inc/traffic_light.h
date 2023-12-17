@@ -74,9 +74,8 @@ typedef struct {
 } TrafficLight;
 
 
-void TrafficLightStateMachine(TrafficLight *tl);
+void trafficLightStateMachine(TrafficLight *tl);
 void initialize(TrafficLight *tl);
 void updateInputs(TrafficLight *tl);
-void toggleLED(int i, int led);
 
 #endif /* INC_TRAFFIC_LIGHT_H_ */

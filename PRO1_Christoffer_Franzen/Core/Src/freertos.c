@@ -175,7 +175,7 @@ void StartDefaultTask(void *argument)
 
 	for (;;) {
 #ifdef RUN_TEST_PROGRAM
-	  Test_program();
+	  test_program();
 	  vTaskDelayUntil(&xLastWakeTime, xPeriod);
 	#else
 		vTaskDelete(NULL);
@@ -232,7 +232,7 @@ void TrafficLightTask(void *argument)
 #ifdef RUN_TEST_PROGRAM
 	  vTaskDelete(NULL);
 	#else
-		TrafficLightStateMachine(&tl);
+		trafficLightStateMachine(&tl);
 		updateInputs(&tl);
 		vTaskDelayUntil(&xLastWakeTime, xPeriod);
 #endif
