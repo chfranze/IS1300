@@ -29,12 +29,13 @@
 #include "test.h"
 #include "utilities.h"
 #include "traffic_light.h"
+#include "global.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 typedef StaticSemaphore_t osStaticMutexDef_t;
 /* USER CODE BEGIN PTD */
-
+osThreadId_t ToggleLEDHandle;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -51,6 +52,7 @@ typedef StaticSemaphore_t osStaticMutexDef_t;
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 TrafficLight tl;
+uint8_t ledID;
 
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
@@ -74,6 +76,13 @@ const osThreadAttr_t TrafficLight_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for ToggleLED */
+osThreadId_t ToggleLEDHandle;
+const osThreadAttr_t ToggleLED_attributes = {
+  .name = "ToggleLED",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityHigh,
+};
 /* Definitions for spiMutex */
 osMutexId_t spiMutexHandle;
 osStaticMutexDef_t spiMutexControlBlock;
@@ -91,6 +100,7 @@ void wait_cycles(uint32_t n);
 void StartDefaultTask(void *argument);
 void SendSPIdataTask(void *argument);
 void TrafficLightTask(void *argument);
+void ToggleLEDTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -133,8 +143,12 @@ void MX_FREERTOS_Init(void) {
   /* creation of TrafficLight */
   TrafficLightHandle = osThreadNew(TrafficLightTask, NULL, &TrafficLight_attributes);
 
+  /* creation of ToggleLED */
+  ToggleLEDHandle = osThreadNew(ToggleLEDTask, NULL, &ToggleLED_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
+  vTaskSuspend(ToggleLEDHandle);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -224,6 +238,28 @@ void TrafficLightTask(void *argument)
 #endif
 	}
   /* USER CODE END TrafficLightTask */
+}
+
+/* USER CODE BEGIN Header_ToggleLEDTask */
+/**
+* @brief Function implementing the ToggleLED thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_ToggleLEDTask */
+void ToggleLEDTask(void *argument)
+{
+  /* USER CODE BEGIN ToggleLEDTask */
+	const TickType_t xFrequency = toggleFreq;
+	TickType_t xLastWakeTime = xTaskGetTickCount();
+	//uint8_t ledID = *((uint8_t*) argument);
+  /* Infinite loop */
+  for(;;)
+  {
+	toggleLED2(ledID);
+	vTaskDelayUntil(&xLastWakeTime, xFrequency);
+  }
+  /* USER CODE END ToggleLEDTask */
 }
 
 /* Private application code --------------------------------------------------*/

@@ -8,6 +8,11 @@
 @brief Contain definitions related to the lights and more
 ******************************************************************************
 */
+#include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "traffic_light.h"
 
 #ifndef INC_UTILITIES_H_
 #define INC_UTILITIES_H_
@@ -45,11 +50,14 @@
 
 extern uint8_t data[3];
 extern uint8_t lastData[3];
+extern uint8_t LED_arr[24][3];
 
 void sendSPIdata(uint8_t data[], uint16_t byteSize);
 void lightUpLEDs(uint8_t leds[][3], size_t num_leds);
 void ledOn(uint8_t Lednr);
 void ledOff(uint8_t Lednr);
 void turnOffAllLEDs();
+void updateLEDs(TrafficLight *tl);
+void toggleLED2(uint8_t Lednr);
 
 #endif /* INC_UTILITIES_H_ */

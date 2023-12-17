@@ -20,6 +20,7 @@
 #include "spi.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "traffic_light.h"
 
 uint8_t data[3] = { 0x00, 0x00, 0x00 };
 uint8_t lastData[3] = { 0x00, 0x00, 0x00 };
@@ -102,5 +103,123 @@ void ledOff(uint8_t Lednr) {
 void turnOffAllLEDs() {
     for (uint8_t i = 1; i <= 24; i++) {
         ledOff(i);
+    }
+}
+
+/**
+ @brief
+ @param
+ @return void
+ */
+void updateLEDs(TrafficLight *tl) {
+    // Turn off all LEDs
+    turnOffAllLEDs();
+
+    // Update the car LEDs
+    switch (tl->north) {
+        case RED:
+            ledOn(10);
+            break;
+        case GREEN:
+            ledOn(12);
+            break;
+        case ORANGE:
+            ledOn(11);
+            break;
+        default:
+            break;
+    }
+
+    switch (tl->south) {
+        case RED:
+            ledOn(4);
+            break;
+        case GREEN:
+            ledOn(6);
+            break;
+        case ORANGE:
+            ledOn(5);
+            break;
+        default:
+            break;
+    }
+
+    switch (tl->east) {
+        case RED:
+            ledOn(1);
+            break;
+        case GREEN:
+            ledOn(3);
+            break;
+        case ORANGE:
+            ledOn(2);
+            break;
+        default:
+            break;
+    }
+
+    switch (tl->west) {
+        case RED:
+            ledOn(7);
+            break;
+        case GREEN:
+            ledOn(9);
+            break;
+        case ORANGE:
+            ledOn(8);
+            break;
+        default:
+            break;
+    }
+
+    // Update the pedestrian LEDs
+    switch (tl->pedestrianNS) {
+        case RED:
+            ledOn(20);
+            ledOn(19);
+            break;
+        case GREEN:
+            ledOn(22);
+            ledOn(21);
+            break;
+        default:
+            break;
+    }
+
+    switch (tl->pedestrianEW) {
+        case RED:
+            ledOn(14);
+            ledOn(13);
+            break;
+        case GREEN:
+            ledOn(16);
+            ledOn(15);
+            break;
+        default:
+            break;
+    }
+}
+
+/**
+ @brief
+ @param
+ @return void
+ */
+void toggleLED2(uint8_t Lednr){
+    static uint8_t ledState = 0; // LED state: 0 means off, 1 means on
+
+    // Toggle the LED state
+    ledState = !ledState;
+
+    // Set the LED to the new state
+    if (ledState)
+    {
+        // Turn on the LED
+        ledOn(Lednr);
+    }
+    else
+    {
+        // Turn off the LED
+        ledOff(Lednr);
     }
 }

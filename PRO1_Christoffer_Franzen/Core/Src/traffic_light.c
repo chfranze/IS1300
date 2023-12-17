@@ -19,17 +19,12 @@
 #include "timers.h"
 #include "switch_handlers.h"
 #include "traffic_light.h"
+#include "global.h"
 
-uint8_t toggleFreq = 5;
-uint8_t pedestrianDelay = 100;
-uint8_t walkingDelay = 100;
-uint8_t orangeDelay = 50;
-//uint8_t greenDelay = 5000;
-//uint8_t redDelayMax = 100;
-//const TickType_t toggleFreq = pdMS_TO_TICKS(500);
-//const TickType_t pedestrianDelay = pdMS_TO_TICKS(5000);
-//const TickType_t walkingDelay = pdMS_TO_TICKS(10000);
-//const TickType_t orangeDelay = pdMS_TO_TICKS(2500);
+const TickType_t pedestrianDelay = pdMS_TO_TICKS(8000);
+const TickType_t toggleFreq = pdMS_TO_TICKS(250);
+const TickType_t orangeDelay = pdMS_TO_TICKS(5000);
+const TickType_t walkingDelay = pdMS_TO_TICKS(10000);
 const TickType_t greenDelay = pdMS_TO_TICKS(5000);
 const TickType_t redDelayMax = pdMS_TO_TICKS(5000);
 
@@ -72,10 +67,10 @@ void toggleLED(int i, int led) {
  @return void
  */
 void TrafficLightStateMachine(TrafficLight *tl) {
-    TickType_t xLastWakeTime;
-    const TickType_t xFrequency = pdMS_TO_TICKS(100); // Delay for 1 second
     static TickType_t lastChangeTime = 0;
     static TickType_t lastChangeTime2 = 0;
+    static TickType_t lastChangeTime3 = 0;
+    static TickType_t lastChangeTime4 = 0;
 
 	if ((xTaskGetTickCount() - lastChangeTime) >= greenDelay) {
 		bool all_false = true;
@@ -109,6 +104,7 @@ void TrafficLightStateMachine(TrafficLight *tl) {
     if (tl->button_pressed_NS) {
         // Pedestrian button for North-South has been pressed
         tl->button_pressed_NS = false; // Reset the button state
+	    lastChangeTime3 = xTaskGetTickCount();
 
         // if tl->north = tl->south is RED
         if(tl->north == RED && tl->south == RED)
@@ -116,89 +112,105 @@ void TrafficLightStateMachine(TrafficLight *tl) {
             tl->pedestrianNS = GREEN;
             updateLEDs(tl);
 
-            xLastWakeTime = xTaskGetTickCount();
-            for (int i = 0; i < walkingDelay; i++) {
-                vTaskDelayUntil(&xLastWakeTime, xFrequency);
-            }
+            // R1.4 The pedestrian signal stays green for walkingDelay ms
+            vTaskDelay(walkingDelay);
 
             tl->pedestrianNS = RED;
             updateLEDs(tl);
         }
         else
         {
+            ledID = 23;
+            vTaskResume(ToggleLEDHandle);
+
+            // R1.3
+            while((xTaskGetTickCount() - lastChangeTime3) <= pedestrianDelay - orangeDelay){
+                vTaskDelay(1);
+            }
+
             // Change the state of the traffic lights
             tl->north = tl->south = ORANGE;
             // Update the LEDs
             updateLEDs(tl);
 
-            xLastWakeTime = xTaskGetTickCount();
-            for (int i = 0; i < orangeDelay; i++) {
-                vTaskDelayUntil(&xLastWakeTime, xFrequency);
-                toggleLED(i, 23); // Toggle LED 23
-            }
+            vTaskDelay(orangeDelay);
+
+            vTaskSuspend(ToggleLEDHandle);
 
             tl->pedestrianNS = GREEN;
             tl->north = tl->south = RED;
             // Update the LEDs
             updateLEDs(tl);
 
-            xLastWakeTime = xTaskGetTickCount();
-            for (int i = 0; i < walkingDelay; i++) {
-                vTaskDelayUntil(&xLastWakeTime, xFrequency);
-            }
+            // R1.4 The pedestrian signal stays green for walkingDelay ms
+            vTaskDelay(walkingDelay-orangeDelay);
 
             // Change the state of the pedestrian light to RED
+            tl->north = tl->south = ORANGE;
+            updateLEDs(tl);
+
+            vTaskDelay(orangeDelay);
+
             tl->north = tl->south = GREEN;
             tl->pedestrianNS = RED;
+            updateLEDs(tl);
         }
     } else if (tl->button_pressed_EW) {
         // Pedestrian button for East-West has been pressed
         tl->button_pressed_EW = false; // Reset the button state
+	    lastChangeTime4 = xTaskGetTickCount();
 
         if(tl->east == RED && tl->west == RED)
         {
             tl->pedestrianEW = GREEN;
             updateLEDs(tl);
 
-            xLastWakeTime = xTaskGetTickCount();
-            for (int i = 0; i < walkingDelay; i++) {
-                vTaskDelayUntil(&xLastWakeTime, xFrequency);
-            }
+            // R1.4 The pedestrian signal stays green for walkingDelay ms
+            vTaskDelay(walkingDelay);
 
             tl->pedestrianEW = RED;
             updateLEDs(tl);
         }
         else
         {
+            ledID = 18;
+            vTaskResume(ToggleLEDHandle);
+
+            // R1.3
+            while((xTaskGetTickCount() - lastChangeTime4) <= pedestrianDelay - orangeDelay){
+                vTaskDelay(1);
+            }
+
             // Change the state of the traffic lights
             tl->east = tl->west = ORANGE;
             // Update the LEDs
             updateLEDs(tl);
 
-            xLastWakeTime = xTaskGetTickCount();
-            for (int i = 0; i < orangeDelay; i++) {
-                vTaskDelayUntil(&xLastWakeTime, xFrequency);
-                toggleLED(i, 18); // Toggle LED 23
-            }
+            vTaskDelay(orangeDelay);
+
+            vTaskSuspend(ToggleLEDHandle);
 
             tl->pedestrianEW = GREEN;
             tl->east = tl->west = RED;
             // Update the LEDs
             updateLEDs(tl);
 
-            xLastWakeTime = xTaskGetTickCount();
-            for (int i = 0; i < walkingDelay; i++) {
-                vTaskDelayUntil(&xLastWakeTime, xFrequency);
-            }
+            // R1.4 The pedestrian signal stays green for walkingDelay ms
+            vTaskDelay(walkingDelay-orangeDelay);
 
             // Change the state of the pedestrian light to RED
+            tl->east = tl->west = ORANGE;
+            updateLEDs(tl);
+
+            vTaskDelay(orangeDelay);
+
             tl->east = tl->west = GREEN;
             tl->pedestrianEW = RED;
+            updateLEDs(tl);
         }
     }
     else
     {
-
     	// No pedestrian
 
     	// R2.7
@@ -214,12 +226,11 @@ void TrafficLightStateMachine(TrafficLight *tl) {
 				else if((xTaskGetTickCount() - lastChangeTime2) >= redDelayMax){
 					tl->east = ORANGE;
 					tl->west = ORANGE;
+					tl->north = ORANGE;
+					tl->south = ORANGE;
 		            updateLEDs(tl);
 
-					xLastWakeTime = xTaskGetTickCount(); //
-					for (int i = 0; i < orangeDelay; i++) {	// Cross walk shall be red pedestrianDelay after the pedestrian pushed the button (R1.3)
-						vTaskDelayUntil(&xLastWakeTime, xFrequency);
-					}
+		            vTaskDelay(orangeDelay);
 
 					tl->east = RED;
 					tl->west = RED;
@@ -228,10 +239,6 @@ void TrafficLightStateMachine(TrafficLight *tl) {
 		            updateLEDs(tl);
 
 		            lastChangeTime2 = xTaskGetTickCount();
-					//xLastWakeTime = xTaskGetTickCount(); //
-					//for (int i = 0; i < redDelayMax; i++) {	// Cross walk shall be red pedestrianDelay after the pedestrian pushed the button (R1.3)
-					//	vTaskDelayUntil(&xLastWakeTime, xFrequency);
-					//}
 				}
 			}
     	}
@@ -248,12 +255,11 @@ void TrafficLightStateMachine(TrafficLight *tl) {
 				}else if((xTaskGetTickCount() - lastChangeTime2) >= redDelayMax){
 					tl->north = ORANGE;
 					tl->south = ORANGE;
+					tl->east = ORANGE;
+					tl->west = ORANGE;
 		            updateLEDs(tl);
 
-					xLastWakeTime = xTaskGetTickCount(); //
-					for (int i = 0; i < orangeDelay; i++) {	// Cross walk shall be red pedestrianDelay after the pedestrian pushed the button (R1.3)
-						vTaskDelayUntil(&xLastWakeTime, xFrequency);
-					}
+		            vTaskDelay(orangeDelay);
 
 					tl->north = RED;
 					tl->south = RED;
@@ -262,107 +268,9 @@ void TrafficLightStateMachine(TrafficLight *tl) {
 		            updateLEDs(tl);
 
 		            lastChangeTime2 = xTaskGetTickCount();
-					//xLastWakeTime = xTaskGetTickCount(); //
-					//for (int i = 0; i < redDelayMax; i++) {	// Cross walk shall be red pedestrianDelay after the pedestrian pushed the button (R1.3)
-					//	vTaskDelayUntil(&xLastWakeTime, xFrequency);
-					//}
 				}
 			}
     	}
-    }
-}
-
-/**
- @brief
- @param
- @return void
- */
-void updateLEDs(TrafficLight *tl) {
-    // Turn off all LEDs
-    turnOffAllLEDs();
-
-    // Update the car LEDs
-    switch (tl->north) {
-        case RED:
-            ledOn(10);
-            break;
-        case GREEN:
-            ledOn(12);
-            break;
-        case ORANGE:
-            ledOn(11);
-            break;
-        default:
-            break;
-    }
-
-    switch (tl->south) {
-        case RED:
-            ledOn(4);
-            break;
-        case GREEN:
-            ledOn(6);
-            break;
-        case ORANGE:
-            ledOn(5);
-            break;
-        default:
-            break;
-    }
-
-    switch (tl->east) {
-        case RED:
-            ledOn(1);
-            break;
-        case GREEN:
-            ledOn(3);
-            break;
-        case ORANGE:
-            ledOn(2);
-            break;
-        default:
-            break;
-    }
-
-    switch (tl->west) {
-        case RED:
-            ledOn(7);
-            break;
-        case GREEN:
-            ledOn(9);
-            break;
-        case ORANGE:
-            ledOn(8);
-            break;
-        default:
-            break;
-    }
-
-    // Update the pedestrian LEDs
-    switch (tl->pedestrianNS) {
-        case RED:
-            ledOn(20);
-            ledOn(19);
-            break;
-        case GREEN:
-            ledOn(22);
-            ledOn(21);
-            break;
-        default:
-            break;
-    }
-
-    switch (tl->pedestrianEW) {
-        case RED:
-            ledOn(14);
-            ledOn(13);
-            break;
-        case GREEN:
-            ledOn(16);
-            ledOn(15);
-            break;
-        default:
-            break;
     }
 }
 
@@ -399,9 +307,4 @@ void updateInputs(TrafficLight *tl){
 		tl->car_present[3] = false;
 	}
 }
-
-
-
-
-
 

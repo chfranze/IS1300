@@ -13,13 +13,17 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "FreeRTOS.h"
+
 #ifndef INC_TRAFFIC_LIGHT_H_
 #define INC_TRAFFIC_LIGHT_H_
 
-extern uint8_t toggleFreq;       // Frequency of toggle in ms
-extern uint8_t pedestrianDelay;  // Delay in ms after the pedestrian pushed the button
-extern uint8_t walkingDelay;     // Time in ms the pedestrian signal stays green
-extern uint8_t orangeDelay;      // Time in ms a car signal remains orange
+extern const TickType_t pedestrianDelay;
+extern const TickType_t toggleFreq;
+extern const TickType_t orangeDelay;
+extern const TickType_t walkingDelay;
+extern const TickType_t greenDelay;
+extern const TickType_t redDelayMax;
 
 /** @enum TrafficLightState
  *  @brief This enum represents the state of a traffic light.
@@ -72,7 +76,6 @@ typedef struct {
 
 void TrafficLightStateMachine(TrafficLight *tl);
 void initialize(TrafficLight *tl);
-void updateLEDs(TrafficLight *tl);
 void updateInputs(TrafficLight *tl);
 void toggleLED(int i, int led);
 
