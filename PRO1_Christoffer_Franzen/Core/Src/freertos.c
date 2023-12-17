@@ -79,7 +79,7 @@ const osMutexAttr_t spiMutex_attributes = { .name = "spiMutex", .cb_mem =
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-void wait_cycles(uint32_t n);
+
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
@@ -153,23 +153,22 @@ void MX_FREERTOS_Init(void) {
  */
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument) {
-	/* USER CODE BEGIN StartDefaultTask */
-	TickType_t xLastWakeTime;
-	const TickType_t xPeriod = pdMS_TO_TICKS(10); // ms to ticks
-
-	/* Infinite loop */
-	xLastWakeTime = xTaskGetTickCount();
-
-	for (;;) {
+    /* USER CODE BEGIN StartDefaultTask */
+    /* Infinite loop */
+    for (;;) {
 #ifdef RUN_TEST_PROGRAM
-	  test_program();
-	  vTaskDelayUntil(&xLastWakeTime, xPeriod);
-	#else
-		vTaskDelete(NULL);
+        TickType_t xLastWakeTime;
+        const TickType_t xPeriod = pdMS_TO_TICKS(10); // ms to ticks
+        xLastWakeTime = xTaskGetTickCount();
+        test_program();
+        vTaskDelayUntil(&xLastWakeTime, xPeriod);
+#else
+        vTaskDelete(NULL);
 #endif
-	}
-	/* USER CODE END StartDefaultTask */
+    }
+    /* USER CODE END StartDefaultTask */
 }
+
 
 /* USER CODE BEGIN Header_SendSPIdataTask */
 /**
@@ -247,9 +246,6 @@ void ToggleLEDTask(void *argument) {
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-void wait_cycles(uint32_t n) {
-	uint32_t l = n / 3; //cycles per loop is 3
-	asm volatile( "0:" "SUBS %[count], 1;" "BNE 0b;" :[count]"+r"(l) );
-}
+
 /* USER CODE END Application */
 
